@@ -1,0 +1,39 @@
+.home-container {
+  backgroundColor: gray;
+  height: 100%;
+  display: flex;
+  flexDirection: column;
+}
+
+.home-navbar {
+  height: 75px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  padding-right: 15px;
+}
+
+.home-content {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  height: 100%;
+  position: relative
+}
+
+.home-bg {
+  height: 800px;
+  margin-right: 5%;
+}
+
+.home-description {
+  position: absolute;
+  bottom: 15%;
+  left: 50px;
+  max-width: 500px;
+  padding: 10px;
+}
+
+.home-auth {
+  gap: 10px;
+}
