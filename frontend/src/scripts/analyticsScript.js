@@ -21,32 +21,32 @@ window.addEventListener('click', function (event) {
 
   //if (event.target.tagName.toLowerCase() === "button") {}
   // Envoyer un événement à l'API
-  console.log({
+  /*console.log({
     innerText: event.target.innerText || '',
     cssSelector: path.join(' > '),
     time: Date.now()
-  });
+  });*/
 });
 
 // page changes
 window.addEventListener('popstate', function () {
   // Envoyer un événement à l'API
-  console.log({
+  /* console.log({
     eventType: 'pageChange',
     url: window.location.href,
     timestamp: Date.now()
-  });
+  });*/
 });
 
 // window resize
 window.addEventListener('resize', function () {
   // Envoyer un événement à l'API
-  console.log({
+  /*console.log({
     eventType: 'windowResize',
     width: window.innerWidth,
     height: window.innerHeight,
     timestamp: Date.now()
-  });
+  });*/
 });
 
 //pro­vide a glob­al func­tion to al­low send­ing cus­tom events to the API.

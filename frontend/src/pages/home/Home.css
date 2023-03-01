@@ -5,14 +5,6 @@
   flexDirection: column;
 }
 
-.home-navbar {
-  height: 75px;
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  padding-right: 15px;
-}
-
 .home-content {
   display: flex;
   justify-content: flex-end;

@@ -1,0 +1,17 @@
+.login-container {
+  display: flex ;
+  flex-direction: row ;
+  justify-content: flex-end ;
+  margin: 0px !important;
+  padding: 0px;
+  height: 100%;
+  align-items: center;
+  //background: url('')
+}
+
+.login-paper {
+  width: 40%;
+  height: 70%;
+  margin-top: 75px;
+  margin-right: 35px;
+}

@@ -1,23 +1,11 @@
-import { Button, Paper, Stack, Typography } from '@mui/material';
+import { Paper, Stack, Typography } from '@mui/material';
 import React from 'react';
 import './Home.css';
 import img from '../../assets/home-main-bg.png';
 
-const Auth = () => {
-  return (
-    <Stack direction="row" className="home-auth">
-      <Button variant="outlined">LogIn</Button>
-      <Button variant="outlined">SignIn</Button>
-    </Stack>
-  );
-};
-
 const Home = () => {
   return (
     <Stack className="home-container">
-      <Stack className="home-navbar">
-        <Auth />
-      </Stack>
       <Stack direction="row" className="home-content">
         <img src={img} className="home-bg" />
         <Paper className="home-description">
