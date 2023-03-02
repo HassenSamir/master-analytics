@@ -21,11 +21,11 @@ window.addEventListener('click', function (event) {
 
   //if (event.target.tagName.toLowerCase() === "button") {}
   // Envoyer un événement à l'API
-  /*console.log({
+  console.log({
     innerText: event.target.innerText || '',
     cssSelector: path.join(' > '),
     time: Date.now()
-  });*/
+  });
 });
 
 // page changes
