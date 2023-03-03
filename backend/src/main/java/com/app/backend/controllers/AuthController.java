@@ -4,8 +4,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-
 import com.app.backend.models.User;
 import com.app.backend.payload.request.LoginRequest;
 import com.app.backend.payload.request.SignupRequest;
