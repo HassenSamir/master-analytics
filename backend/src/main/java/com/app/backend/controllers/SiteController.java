@@ -26,7 +26,7 @@ public class SiteController {
 
     @GetMapping("/{userId}")
     @PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
-    public List<Site> getSitesByUserId(@PathVariable String userId) throws Exception {
+    public ResponseEntity<?> getSitesByUserId(@PathVariable String userId) throws Exception {
         return siteServices.getSitesByUserId(userId);
     }
 

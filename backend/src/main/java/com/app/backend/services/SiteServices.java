@@ -130,13 +130,16 @@ public class SiteServices {
         siteRepository.deleteById(id);
     }
 
-    public List<Site> getSitesByUserId(String userId) throws Exception {
+    public ResponseEntity<?> getSitesByUserId(String userId) throws Exception {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         // Vérifier si l'utilisateur existe
         Optional<User> optionalUser = userRepository.findById(userId);
         if (optionalUser.isEmpty()) {
-            throw new Exception("User not found with id: " + userId);
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new ErrorResponse(HttpStatus.NOT_FOUND.value(), "Not Found", "User not found with id: " + userId));
         }
 
         // Vérifier si l'utilisateur connecté est propriétaire des sites ou s'il est modérateur ou administrateur
@@ -145,10 +148,13 @@ public class SiteServices {
         boolean isModerator = authentication.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_MODERATOR"));
         if (!isAdmin && !isModerator && !((UserDetailsImpl) authentication.getPrincipal()).getId().equals(userId)) {
-            throw new AccessDeniedException("You are not authorized to access this resource");
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new ErrorResponse(HttpStatus.UNAUTHORIZED.value(), "Unauthorized", "You are not authorized to access this resource"));
         }
 
-        return siteRepository.findAllByUserId(userId);
+        return ResponseEntity.status(HttpStatus.OK).body(siteRepository.findAllByUserId(userId));
     }
 
     public Site updateSite(String id, Site updatedSite) throws Exception {
