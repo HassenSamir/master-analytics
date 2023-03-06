@@ -105,24 +105,14 @@ public class EventController {
         return eventService.createClickEvent(clickEventDTO, request, apiKey);
     }
 
-    @PostMapping("/page_change")
-    @PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
-    public ResponseEntity<EventPageChange> createPageChangeEvent(@Valid @RequestBody EventPageChangeDTO pageChangeEventDTO, HttpServletRequest request) throws IOException {
-        EventPageChange eventPageChange= eventService.createPageChangeEvent(pageChangeEventDTO, request);
-        URI location = ServletUriComponentsBuilder
-                .fromCurrentRequest().path("/{id}")
-                .buildAndExpand(eventPageChange.getId()).toUri();
-        return ResponseEntity.created(location).body(eventPageChange);
+    @PostMapping("/page_change/{apiKey}")
+    public ResponseEntity<?>  createPageChangeEvent(@Valid @RequestBody EventPageChangeDTO pageChangeEventDTO, @PathVariable String apiKey, HttpServletRequest request) throws IOException {
+        return eventService.createPageChangeEvent(pageChangeEventDTO, request, apiKey);
     }
 
-    @PostMapping("/resize")
-    @PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
-    public ResponseEntity<EventResize> createResizeEvent(@Valid @RequestBody EventResizeDTO resizeEventDTO, HttpServletRequest request) throws IOException {
-        EventResize eventResize = eventService.createResizeEvent(resizeEventDTO, request);
-        URI location = ServletUriComponentsBuilder
-                .fromCurrentRequest().path("/{id}")
-                .buildAndExpand(eventResize.getId()).toUri();
-        return ResponseEntity.created(location).body(eventResize);
+    @PostMapping("/resize/{apiKey}")
+    public ResponseEntity<?> createResizeEvent(@Valid @RequestBody EventResizeDTO resizeEventDTO, @PathVariable String apiKey, HttpServletRequest request) throws IOException {
+        return eventService.createResizeEvent(resizeEventDTO, request, apiKey);
     }
 
 }

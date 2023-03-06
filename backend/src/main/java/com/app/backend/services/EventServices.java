@@ -82,7 +82,7 @@ public class EventServices {
         String siteUrl = site.getUrl();
         logger.info("requestUrl: {}", requestUrl);
         logger.info("siteUrl: {}", siteUrl);
-        if (!isSameDomain(siteUrl,requestUrl)) {
+        if (isNotSameDomain(siteUrl,requestUrl)) {
             return ResponseEntity
                     .status(HttpStatus.NOT_FOUND)
                     .contentType(MediaType.APPLICATION_JSON)
@@ -105,7 +105,7 @@ public class EventServices {
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Bad Request", "Inner text is required"));
         }
-        
+
         // Créer un nouvel objet événement de clic
         EventClick clickEvent = new EventClick(
                 clickEventDTO.getUserId(),
@@ -124,19 +124,36 @@ public class EventServices {
         return ResponseEntity.status(HttpStatus.CREATED).body(clickEvent);
     }
 
-    public EventPageChange createPageChangeEvent(EventPageChangeDTO pageChangeEventDTO, HttpServletRequest request) throws IOException {
-        // Vérifier si l'utilisateur existe
-        Optional<User> userOptional = userRepository.findById(pageChangeEventDTO.getUserId());
-        if (userOptional.isEmpty()) {
-            throw new IOException("User with ID " + pageChangeEventDTO.getUserId() + " not found");
+    public ResponseEntity<?> createPageChangeEvent(EventPageChangeDTO pageChangeEventDTO, HttpServletRequest request,String apiKey) throws IOException {
+        Logger logger = LoggerFactory.getLogger(getClass());
+        // Vérifier si l'apiKey existe dans la base de données
+        Optional<Site> siteOptional = siteRepository.findByApiKey(apiKey);
+        if (siteOptional.isEmpty()) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new ErrorResponse(HttpStatus.NOT_FOUND.value(), "Not Found", "Site with apiKey " + apiKey + " not found"));
+        }
+        Site site = siteOptional.get();
+
+        // Vérifier si l'URL de la requête correspond à l'URL du site
+        String requestUrl = request.getRequestURL().toString();
+        String siteUrl = site.getUrl();
+        logger.info("requestUrl: {}", requestUrl);
+        logger.info("siteUrl: {}", siteUrl);
+        if (isNotSameDomain(siteUrl,requestUrl)) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new ErrorResponse(HttpStatus.NOT_FOUND.value(), "Not Found", "Invalid request URL "+ requestUrl));
         }
 
         // Vérifier si Old page est non nul et non vide
-        if (StringUtils.isEmpty(pageChangeEventDTO.getOldPage())) {
+        if (ObjectUtils.isEmpty(pageChangeEventDTO.getOldPage())) {
             throw new IOException("Old page is required");
         }
         // Vérifier si New page est non nul et non vide
-        if (StringUtils.isEmpty(pageChangeEventDTO.getNewPage())) {
+        if (ObjectUtils.isEmpty(pageChangeEventDTO.getNewPage())) {
             throw new IOException("New page is required");
         }
 
@@ -148,28 +165,46 @@ public class EventServices {
                 pageChangeEventDTO.getClientTime(),
                 request.getRemoteAddr(),
                 request.getHeader("User-Agent"),
-                LocalDateTime.now()
+                LocalDateTime.now(),
+                site
         );
 
         // Enregistrer l'événement page change
         eventPageChangeRepository.save(pageChangeEvent);
 
-        return pageChangeEvent;
+        return ResponseEntity.status(HttpStatus.CREATED).body(pageChangeEvent);
     }
 
-    public EventResize createResizeEvent(EventResizeDTO eventResizeDTO, HttpServletRequest request) throws IOException {
-        // Vérifier si l'utilisateur existe
-        Optional<User> userOptional = userRepository.findById(eventResizeDTO.getUserId());
-        if (userOptional.isEmpty()) {
-            throw new IOException("User with ID " + eventResizeDTO.getUserId() + " not found");
+    public ResponseEntity<?> createResizeEvent(EventResizeDTO eventResizeDTO, HttpServletRequest request,String apiKey) throws IOException {
+        Logger logger = LoggerFactory.getLogger(getClass());
+        // Vérifier si l'apiKey existe dans la base de données
+        Optional<Site> siteOptional = siteRepository.findByApiKey(apiKey);
+        if (siteOptional.isEmpty()) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new ErrorResponse(HttpStatus.NOT_FOUND.value(), "Not Found", "Site with apiKey " + apiKey + " not found"));
+        }
+        Site site = siteOptional.get();
+
+        // Vérifier si l'URL de la requête correspond à l'URL du site
+        String requestUrl = request.getRequestURL().toString();
+        String siteUrl = site.getUrl();
+        logger.info("requestUrl: {}", requestUrl);
+        logger.info("siteUrl: {}", siteUrl);
+        if (isNotSameDomain(siteUrl,requestUrl)) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new ErrorResponse(HttpStatus.NOT_FOUND.value(), "Not Found", "Invalid request URL "+ requestUrl));
         }
 
         // Vérifier si Screen width est non nul et non vide
-        if (StringUtils.isEmpty(eventResizeDTO.getScreenWidth())) {
+        if (ObjectUtils.isEmpty(eventResizeDTO.getScreenWidth())) {
             throw new IOException("Screen width is required");
         }
         // Vérifier si Screen height est non nul et non vide
-        if (StringUtils.isEmpty(eventResizeDTO.getScreenHeight())) {
+        if (ObjectUtils.isEmpty(eventResizeDTO.getScreenHeight())) {
             throw new IOException("Screen height is required");
         }
 
@@ -181,16 +216,17 @@ public class EventServices {
                 eventResizeDTO.getClientTime(),
                 request.getRemoteAddr(),
                 request.getHeader("User-Agent"),
-                LocalDateTime.now()
+                LocalDateTime.now(),
+                site
         );
 
         // Enregistrer l'événement resize
         eventResizeRepository.save(eventResize);
 
-        return eventResize;
+        return ResponseEntity.status(HttpStatus.CREATED).body(eventResize);
     }
 
-    public boolean isSameDomain(String url1, String url2) throws MalformedURLException {
+    public boolean isNotSameDomain(String url1, String url2) throws MalformedURLException {
         URL u1 = new URL(url1);
         URL u2 = new URL(url2);
 
@@ -200,7 +236,7 @@ public class EventServices {
         String protocol1 = u1.getProtocol();
         String protocol2 = u2.getProtocol();
 
-        return host1.equals(host2) && protocol1.equals(protocol2);
+        return !(host1.equals(host2) && protocol1.equals(protocol2));
     }
 
 }

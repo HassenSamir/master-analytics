@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
@@ -24,8 +25,10 @@ public class EventPageChange {
     private String userAgent;
     private String ipAddress;
     private LocalDateTime serverTime;
+    @DBRef
+    private Site site;
 
-    public EventPageChange(String userId, String oldPage, String newPage, LocalDateTime clientTime, String userAgent, String ipAddress, LocalDateTime serverTime) {
+    public EventPageChange(String userId, String oldPage, String newPage, LocalDateTime clientTime, String userAgent, String ipAddress, LocalDateTime serverTime,Site site) {
         this.userId = userId;
         this.oldPage = oldPage;
         this.newPage = newPage;
@@ -33,5 +36,7 @@ public class EventPageChange {
         this.userAgent = userAgent;
         this.ipAddress = ipAddress;
         this.serverTime = serverTime;
+        this.site = site;
+
     }
 }
