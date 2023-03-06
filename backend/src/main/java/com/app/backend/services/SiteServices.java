@@ -1,6 +1,5 @@
 package com.app.backend.services;
 
-import com.app.backend.controllers.SiteController;
 import com.app.backend.dto.SiteDTO;
 import com.app.backend.handler.ErrorResponse;
 import com.app.backend.models.Site;
@@ -8,9 +7,7 @@ import com.app.backend.models.User;
 import com.app.backend.repository.SiteRepository;
 import com.app.backend.repository.UserRepository;
 import com.app.backend.security.config.ApiKeyGenerator;
-import com.app.backend.security.services.UserDetailsImpl;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.app.backend.utils.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -26,7 +23,6 @@ import java.net.URI;
 import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -39,29 +35,21 @@ public class SiteServices {
     private UserRepository userRepository;
 
     public ResponseEntity<?> createSite(SiteDTO siteDto, String userId)  {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        Optional<User> optionalUser = userRepository.findById(userId);
-
-        if (optionalUser.isEmpty()) {
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(new ErrorResponse(HttpStatus.NOT_FOUND.value(), "Not Found", "User not found with id: " + userId));
+        // Vérifier si l'utilisateur existe
+        ResponseEntity<?> isUserOnDb = Utils.checkIfUserExistById(userRepository, userId);
+        if (isUserOnDb != null) {
+            return isUserOnDb;
         }
-        User user = optionalUser.get();
-
-        boolean isAdmin = authentication.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        boolean isModerator = authentication.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_MODERATOR"));
-        if (!isAdmin && !isModerator && !((UserDetailsImpl) authentication.getPrincipal()).getId().equals(userId)) {
+        // Vérifier si l'utilisateur est autorisé à accéder à la ressource
+        if (!Utils.isAuthorized(userId, userRepository)) {
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(new ErrorResponse(HttpStatus.UNAUTHORIZED.value(), "Unauthorized", "You are not authorized to access this resource"));
         }
 
+        Optional<User> optionalUser = userRepository.findById(userId);
+        User user = optionalUser.get();
 
         Site site = new Site();
         site.setUser(user);
@@ -131,23 +119,14 @@ public class SiteServices {
     }
 
     public ResponseEntity<?> getSitesByUserId(String userId) throws Exception {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
         // Vérifier si l'utilisateur existe
-        Optional<User> optionalUser = userRepository.findById(userId);
-        if (optionalUser.isEmpty()) {
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(new ErrorResponse(HttpStatus.NOT_FOUND.value(), "Not Found", "User not found with id: " + userId));
+        ResponseEntity<?> isUserOnDb = Utils.checkIfUserExistById(userRepository, userId);
+        if (isUserOnDb != null) {
+            return isUserOnDb;
         }
 
-        // Vérifier si l'utilisateur connecté est propriétaire des sites ou s'il est modérateur ou administrateur
-        boolean isAdmin = authentication.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        boolean isModerator = authentication.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_MODERATOR"));
-        if (!isAdmin && !isModerator && !((UserDetailsImpl) authentication.getPrincipal()).getId().equals(userId)) {
+
+        if (!Utils.isAuthorized(userId, userRepository)) {
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED)
                     .contentType(MediaType.APPLICATION_JSON)

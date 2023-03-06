@@ -6,22 +6,14 @@ import com.app.backend.dto.EventResizeDTO;
 import com.app.backend.models.*;
 import com.app.backend.payload.response.EventResponse;
 import com.app.backend.repository.UserRepository;
-import com.app.backend.security.services.UserDetailsImpl;
 import com.app.backend.services.EventServices;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.io.IOException;
-import java.net.URI;
-import java.nio.file.AccessDeniedException;
 import java.util.*;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -38,6 +30,8 @@ public class EventController {
 
 
     // Structure this with object click, pagechange, resize rathen than an Array because it is hard to differenciate
+    //paginate because they will be a lot of data
+    //add params like date etc
     @GetMapping("/")
     @PreAuthorize("hasRole('MODERATOR') or hasRole('ADMIN')")
     public ResponseEntity<EventResponse> getAllEvents(@RequestParam(name = "type", required = false) String type) {
@@ -61,44 +55,15 @@ public class EventController {
 
 
 
-    // Handle types
+
     @GetMapping("/user/{userId}")
     @PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
-    public ResponseEntity<EventResponse> getAllEventsByTypeAndUserId(@PathVariable String userId,@RequestParam(name = "type", required = true) String type) throws IOException {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        Collection<? extends GrantedAuthority> authorities = auth.getAuthorities();
-        boolean isUserRoleOnly = authorities.size() == 1 && authorities.contains(new SimpleGrantedAuthority("ROLE_USER"));
-
-        if (isUserRoleOnly && !((UserDetailsImpl) auth.getPrincipal()).getId().equals(userId)) {
-            throw new AccessDeniedException("You are not authorized to access this resource");
-        }
-
-        // Vérifier que l'utilisateur existe
-        Optional<User> userOptional = userRepository.findById(userId);
-        if (userOptional.isEmpty()) {
-            throw new IOException("User with ID " + userId + " not found");
-        }
-
-        EventData data = new EventData();
-        if (type.equalsIgnoreCase("click")) {
-            List<EventClick> clickEvents = eventService.findAllClickEventsByUserId(userId);
-            data.setClickEvents(clickEvents);
-
-        } else if (type.equalsIgnoreCase("page_change")) {
-            List<EventPageChange> pageChangesEvents = eventService.findAllPageChangeEventsByUserId(userId);
-            data.setPageChangeEvents(pageChangesEvents);
-        } else if (type.equalsIgnoreCase("resize")) {
-            List<EventResize> resizeEvents = eventService.findAllResizeEventsByUserId(userId);
-            data.setResizeEvents(resizeEvents);
-        } else {
-            throw new IllegalArgumentException("Invalid event type: " + type);
-        }
-
-        EventResponse response = new EventResponse(type, data);
-        return ResponseEntity.ok().body(response);
+    public ResponseEntity<?> getAllEventsByTypeAndUserId(@PathVariable String userId,@RequestParam(name = "type", required = false, defaultValue = "") String type) throws IOException {
+        return eventService.findAllEventsByTypeAndUserId(type, userId);
     }
 
 
+    //Get All Events for one site
 
     @PostMapping("/click/{apiKey}")
     public ResponseEntity<?> createClickEvent(@Valid @RequestBody EventClickDTO clickEventDTO, @PathVariable String apiKey, HttpServletRequest request) throws IOException {

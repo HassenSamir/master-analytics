@@ -5,21 +5,17 @@ import com.app.backend.dto.EventPageChangeDTO;
 import com.app.backend.dto.EventResizeDTO;
 import com.app.backend.handler.ErrorResponse;
 import com.app.backend.models.*;
+import com.app.backend.payload.response.EventResponse;
 import com.app.backend.repository.*;
+import com.app.backend.utils.Utils;
 import jakarta.servlet.http.HttpServletRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
-
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -43,6 +39,9 @@ public class EventServices {
     private EventResizeRepository eventResizeRepository;
 
 
+    // GET
+
+    // ADMIN SERVICE
     public List<EventClick> findAllClickEvents() {
         return eventClickRepository.findAll();
     }
@@ -55,39 +54,64 @@ public class EventServices {
         return eventResizeRepository.findAll();
     }
 
-    public List<EventClick> findAllClickEventsByUserId(String userId) {
-            return eventClickRepository.findAllByUserId(userId);
-    }
-    public List<EventPageChange> findAllPageChangeEventsByUserId(String userId) {
-        return eventPageChangeRepository.findAllByUserId(userId);
-    }
-    public List<EventResize> findAllResizeEventsByUserId(String userId) {
-        return eventResizeRepository.findAllByUserId(userId);
+
+    // USER SERVICE
+
+    public ResponseEntity<?> findAllEventsByTypeAndUserId(String type, String userId) {
+        // Vérifier si l'utilisateur existe
+        ResponseEntity<?> isUserOnDb = Utils.checkIfUserExistById(userRepository, userId);
+        if (isUserOnDb != null) {
+            return isUserOnDb;
+        }
+        // Vérifier si l'utilisateur est autorisé à accéder à la ressource
+        if (!Utils.isAuthorized(userId, userRepository)) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new ErrorResponse(HttpStatus.UNAUTHORIZED.value(), "Unauthorized", "You are not authorized to access this resource"));
+        }
+
+        EventData data = new EventData();
+        EventResponse response;
+        if (type.isEmpty()){
+            response = new EventResponse("all", data);
+            data.setClickEvents(eventClickRepository.findAllByUserId(userId));
+            data.setPageChangeEvents(eventPageChangeRepository.findAllByUserId(userId));
+            data.setResizeEvents(eventResizeRepository.findAllByUserId(userId));
+        } else if (type.equalsIgnoreCase("click")) {
+            List<EventClick> clickEvents = eventClickRepository.findAllByUserId(userId);
+            data.setClickEvents(clickEvents);
+            response = new EventResponse(type, data);
+        } else if (type.equalsIgnoreCase("page_change")) {
+            List<EventPageChange> pageChangesEvents = eventPageChangeRepository.findAllByUserId(userId);
+            data.setPageChangeEvents(pageChangesEvents);
+            response = new EventResponse(type, data);
+        } else if (type.equalsIgnoreCase("resize")) {
+            List<EventResize> resizeEvents = eventResizeRepository.findAllByUserId(userId);
+            data.setResizeEvents(resizeEvents);
+            response = new EventResponse(type, data);
+        } else {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Bad Request", "Invalid event type: " + type));
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    // CREATE
     public ResponseEntity<?> createClickEvent(EventClickDTO clickEventDTO, HttpServletRequest request, String apiKey) throws IOException {
-        Logger logger = LoggerFactory.getLogger(getClass());
         // Vérifier si l'apiKey existe dans la base de données
-        Optional<Site> siteOptional = siteRepository.findByApiKey(apiKey);
-        if (siteOptional.isEmpty()) {
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(new ErrorResponse(HttpStatus.NOT_FOUND.value(), "Not Found", "Site with apiKey " + apiKey + " not found"));
+        // et si l'URL de la requête correspond à l'URL du site
+        ResponseEntity<?> checkIfApiKeyMatchSiteInDbAndIfReqUrlIsValid = Utils.checkSiteApiKey(request, apiKey, siteRepository);
+        if (checkIfApiKeyMatchSiteInDbAndIfReqUrlIsValid != null) {
+            return checkIfApiKeyMatchSiteInDbAndIfReqUrlIsValid;
         }
+
+        Optional<Site> siteOptional = siteRepository.findByApiKey(apiKey);
         Site site = siteOptional.get();
 
-        // Vérifier si l'URL de la requête correspond à l'URL du site
-        String requestUrl = request.getRequestURL().toString();
-        String siteUrl = site.getUrl();
-        logger.info("requestUrl: {}", requestUrl);
-        logger.info("siteUrl: {}", siteUrl);
-        if (isNotSameDomain(siteUrl,requestUrl)) {
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(new ErrorResponse(HttpStatus.NOT_FOUND.value(), "Not Found", "Invalid request URL "+ requestUrl));
-        }
 
 
         // Vérifier si le sélecteur CSS est non nul et non vide
@@ -125,28 +149,15 @@ public class EventServices {
     }
 
     public ResponseEntity<?> createPageChangeEvent(EventPageChangeDTO pageChangeEventDTO, HttpServletRequest request,String apiKey) throws IOException {
-        Logger logger = LoggerFactory.getLogger(getClass());
         // Vérifier si l'apiKey existe dans la base de données
-        Optional<Site> siteOptional = siteRepository.findByApiKey(apiKey);
-        if (siteOptional.isEmpty()) {
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(new ErrorResponse(HttpStatus.NOT_FOUND.value(), "Not Found", "Site with apiKey " + apiKey + " not found"));
+        // et si l'URL de la requête correspond à l'URL du site
+        ResponseEntity<?> checkIfApiKeyMatchSiteInDbAndIfReqUrlIsValid = Utils.checkSiteApiKey(request, apiKey, siteRepository);
+        if (checkIfApiKeyMatchSiteInDbAndIfReqUrlIsValid != null) {
+            return checkIfApiKeyMatchSiteInDbAndIfReqUrlIsValid;
         }
-        Site site = siteOptional.get();
 
-        // Vérifier si l'URL de la requête correspond à l'URL du site
-        String requestUrl = request.getRequestURL().toString();
-        String siteUrl = site.getUrl();
-        logger.info("requestUrl: {}", requestUrl);
-        logger.info("siteUrl: {}", siteUrl);
-        if (isNotSameDomain(siteUrl,requestUrl)) {
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(new ErrorResponse(HttpStatus.NOT_FOUND.value(), "Not Found", "Invalid request URL "+ requestUrl));
-        }
+        Optional<Site> siteOptional = siteRepository.findByApiKey(apiKey);
+        Site site = siteOptional.get();
 
         // Vérifier si Old page est non nul et non vide
         if (ObjectUtils.isEmpty(pageChangeEventDTO.getOldPage())) {
@@ -176,28 +187,15 @@ public class EventServices {
     }
 
     public ResponseEntity<?> createResizeEvent(EventResizeDTO eventResizeDTO, HttpServletRequest request,String apiKey) throws IOException {
-        Logger logger = LoggerFactory.getLogger(getClass());
         // Vérifier si l'apiKey existe dans la base de données
-        Optional<Site> siteOptional = siteRepository.findByApiKey(apiKey);
-        if (siteOptional.isEmpty()) {
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(new ErrorResponse(HttpStatus.NOT_FOUND.value(), "Not Found", "Site with apiKey " + apiKey + " not found"));
+        // et si l'URL de la requête correspond à l'URL du site
+        ResponseEntity<?> checkIfApiKeyMatchSiteInDbAndIfReqUrlIsValid = Utils.checkSiteApiKey(request, apiKey, siteRepository);
+        if (checkIfApiKeyMatchSiteInDbAndIfReqUrlIsValid != null) {
+            return checkIfApiKeyMatchSiteInDbAndIfReqUrlIsValid;
         }
-        Site site = siteOptional.get();
 
-        // Vérifier si l'URL de la requête correspond à l'URL du site
-        String requestUrl = request.getRequestURL().toString();
-        String siteUrl = site.getUrl();
-        logger.info("requestUrl: {}", requestUrl);
-        logger.info("siteUrl: {}", siteUrl);
-        if (isNotSameDomain(siteUrl,requestUrl)) {
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(new ErrorResponse(HttpStatus.NOT_FOUND.value(), "Not Found", "Invalid request URL "+ requestUrl));
-        }
+        Optional<Site> siteOptional = siteRepository.findByApiKey(apiKey);
+        Site site = siteOptional.get();
 
         // Vérifier si Screen width est non nul et non vide
         if (ObjectUtils.isEmpty(eventResizeDTO.getScreenWidth())) {
@@ -224,19 +222,6 @@ public class EventServices {
         eventResizeRepository.save(eventResize);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(eventResize);
-    }
-
-    public boolean isNotSameDomain(String url1, String url2) throws MalformedURLException {
-        URL u1 = new URL(url1);
-        URL u2 = new URL(url2);
-
-        String host1 = u1.getHost();
-        String host2 = u2.getHost();
-
-        String protocol1 = u1.getProtocol();
-        String protocol2 = u2.getProtocol();
-
-        return !(host1.equals(host2) && protocol1.equals(protocol2));
     }
 
 }
