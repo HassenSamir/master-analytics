@@ -51,7 +51,6 @@ public class SiteServices {
         }
         User user = optionalUser.get();
 
-
         boolean isAdmin = authentication.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
         boolean isModerator = authentication.getAuthorities().stream()
@@ -78,16 +77,25 @@ public class SiteServices {
 
         HttpStatus urlStatus = isValidUrl(site.getUrl());
         if (urlStatus != HttpStatus.OK) {
-            throw new ResponseStatusException(urlStatus, "Invalid URL");
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Bad Request", "Invalid URL"));
         }
 
-       /* Optional<Site> optionalSite = siteRepository.findByUserIdAndName(userId, site.getName());
+        Optional<Site> optionalSite = siteRepository.findByUserIdAndName(userId, site.getName());
         if (optionalSite.isPresent()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Site name already exists for user");
-        }*/
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Bad Request", "Site name already exists for user"));
+        }
 
         if (site.getDescription() == null || site.getDescription().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Site description is required");
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Bad Request", "Site description is required"));
         }
 
         Site savedSite = siteRepository.save(site);
