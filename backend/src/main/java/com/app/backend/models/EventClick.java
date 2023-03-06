@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
@@ -22,8 +23,10 @@ public class EventClick {
     private String clientIpAddress;
     private String clientUserAgent;
     private LocalDateTime serverTime;
+    @DBRef
+    private Site site;
 
-    public EventClick(String userId, LocalDateTime clientTime, String cssSelector, String innerText, String clientIpAddress, String clientUserAgent, LocalDateTime serverTime) {
+    public EventClick(String userId, LocalDateTime clientTime, String cssSelector, String innerText, String clientIpAddress, String clientUserAgent, LocalDateTime serverTime, Site site) {
         this.userId = userId;
         this.clientTime = clientTime;
         this.cssSelector = cssSelector;
@@ -31,6 +34,8 @@ public class EventClick {
         this.clientIpAddress = clientIpAddress;
         this.clientUserAgent = clientUserAgent;
         this.serverTime = serverTime;
+        this.site = site;
     }
+
 
 }

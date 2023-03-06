@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.AccessDeniedException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -100,16 +99,10 @@ public class EventController {
     }
 
 
-    // Maybe update this to handle Array Of Event
-    // Handle Types ?
-    @PostMapping("/click")
-    @PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
-    public ResponseEntity<EventClick> createClickEvent(@Valid @RequestBody EventClickDTO clickEventDTO, HttpServletRequest request) throws IOException {
-        EventClick eventClick = eventService.createClickEvent(clickEventDTO, request);
-        URI location = ServletUriComponentsBuilder
-                .fromCurrentRequest().path("/{id}")
-                .buildAndExpand(eventClick.getId()).toUri();
-        return ResponseEntity.created(location).body(eventClick);
+
+    @PostMapping("/click/{apiKey}")
+    public ResponseEntity<?> createClickEvent(@Valid @RequestBody EventClickDTO clickEventDTO, @PathVariable String apiKey, HttpServletRequest request) throws IOException {
+        return eventService.createClickEvent(clickEventDTO, request, apiKey);
     }
 
     @PostMapping("/page_change")

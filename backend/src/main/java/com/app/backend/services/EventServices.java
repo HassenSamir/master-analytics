@@ -3,17 +3,23 @@ package com.app.backend.services;
 import com.app.backend.dto.EventClickDTO;
 import com.app.backend.dto.EventPageChangeDTO;
 import com.app.backend.dto.EventResizeDTO;
-import com.app.backend.models.EventClick;
-import com.app.backend.models.EventPageChange;
-import com.app.backend.models.EventResize;
-import com.app.backend.models.User;
+import com.app.backend.handler.ErrorResponse;
+import com.app.backend.models.*;
 import com.app.backend.repository.*;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -24,6 +30,9 @@ public class EventServices {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private SiteRepository siteRepository;
     @Autowired
     private EventClickRepository eventClickRepository;
 
@@ -56,20 +65,47 @@ public class EventServices {
         return eventResizeRepository.findAllByUserId(userId);
     }
 
-    public EventClick createClickEvent(EventClickDTO clickEventDTO, HttpServletRequest request) throws IOException {
-        // Vérifier si l'utilisateur existe
-        Optional<User> userOptional = userRepository.findById(clickEventDTO.getUserId());
-        if (userOptional.isEmpty()) {
-            throw new IOException("User with ID " + clickEventDTO.getUserId() + " not found");
+    public ResponseEntity<?> createClickEvent(EventClickDTO clickEventDTO, HttpServletRequest request, String apiKey) throws IOException {
+        Logger logger = LoggerFactory.getLogger(getClass());
+        // Vérifier si l'apiKey existe dans la base de données
+        Optional<Site> siteOptional = siteRepository.findByApiKey(apiKey);
+        if (siteOptional.isEmpty()) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new ErrorResponse(HttpStatus.NOT_FOUND.value(), "Not Found", "Site with apiKey " + apiKey + " not found"));
         }
+        Site site = siteOptional.get();
+
+        // Vérifier si l'URL de la requête correspond à l'URL du site
+        String requestUrl = request.getRequestURL().toString();
+        String siteUrl = site.getUrl();
+        logger.info("requestUrl: {}", requestUrl);
+        logger.info("siteUrl: {}", siteUrl);
+        if (!isSameDomain(siteUrl,requestUrl)) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new ErrorResponse(HttpStatus.NOT_FOUND.value(), "Not Found", "Invalid request URL "+ requestUrl));
+        }
+
+
         // Vérifier si le sélecteur CSS est non nul et non vide
-        if (StringUtils.isEmpty(clickEventDTO.getCssSelector())) {
-            throw new IOException("CSS selector is required");
+        if (ObjectUtils.isEmpty(clickEventDTO.getCssSelector())) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Bad Request", "CSS selector is required"));
         }
+
         // Vérifier si le texte interne est non nul et non vide
-        if (StringUtils.isEmpty(clickEventDTO.getInnerText())) {
-            throw new IOException("Inner text is required");
+        if (ObjectUtils.isEmpty(clickEventDTO.getInnerText())) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Bad Request", "Inner text is required"));
         }
+        
         // Créer un nouvel objet événement de clic
         EventClick clickEvent = new EventClick(
                 clickEventDTO.getUserId(),
@@ -78,13 +114,14 @@ public class EventServices {
                 clickEventDTO.getInnerText(),
                 request.getRemoteAddr(),
                 request.getHeader("User-Agent"),
-                LocalDateTime.now()
+                LocalDateTime.now(),
+                site
         );
 
         // Enregistrer l'événement de clic
         eventClickRepository.save(clickEvent);
 
-        return clickEvent;
+        return ResponseEntity.status(HttpStatus.CREATED).body(clickEvent);
     }
 
     public EventPageChange createPageChangeEvent(EventPageChangeDTO pageChangeEventDTO, HttpServletRequest request) throws IOException {
@@ -151,6 +188,19 @@ public class EventServices {
         eventResizeRepository.save(eventResize);
 
         return eventResize;
+    }
+
+    public boolean isSameDomain(String url1, String url2) throws MalformedURLException {
+        URL u1 = new URL(url1);
+        URL u2 = new URL(url2);
+
+        String host1 = u1.getHost();
+        String host2 = u2.getHost();
+
+        String protocol1 = u1.getProtocol();
+        String protocol2 = u2.getProtocol();
+
+        return host1.equals(host2) && protocol1.equals(protocol2);
     }
 
 }
