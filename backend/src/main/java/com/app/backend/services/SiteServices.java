@@ -75,11 +75,11 @@ public class SiteServices {
         site.setApiKey(apiKey);
         site.setCreationDate(new Date());
 
-        /*
+
         HttpStatus urlStatus = isValidUrl(site.getUrl());
         if (urlStatus != HttpStatus.OK) {
             throw new ResponseStatusException(urlStatus, "Invalid URL");
-        }*/
+        }
 
        /* Optional<Site> optionalSite = siteRepository.findByUserIdAndName(userId, site.getName());
         if (optionalSite.isPresent()) {
@@ -205,26 +205,4 @@ public class SiteServices {
         }
     }
 
-    public static boolean isUrlReachable(String url) {
-        WebClient client = WebClient.builder().build();
-
-        try {
-            Mono<ClientResponse> result = client.head().uri(url).exchangeToMono(Mono::just);
-
-            String responseBody = result.map(response -> {
-                HttpStatus status = (HttpStatus) response.statusCode();
-                if (status.is2xxSuccessful()) {
-                    return "Success";
-                } else {
-                    return "Error";
-                }
-            }).block();
-
-            assert responseBody != null;
-            return responseBody.equals("Success");
-
-        } catch (Exception e) {
-            return false;
-        }
-    }
 }
