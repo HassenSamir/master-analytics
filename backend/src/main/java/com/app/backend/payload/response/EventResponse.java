@@ -4,8 +4,7 @@ import com.app.backend.models.EventData;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
+import org.springframework.data.domain.Pageable;
 
 @Data
 @AllArgsConstructor
@@ -13,5 +12,5 @@ import java.util.List;
 public class EventResponse {
     private String type;
     private EventData data;
-
+    private Pageable pageable;
 }
