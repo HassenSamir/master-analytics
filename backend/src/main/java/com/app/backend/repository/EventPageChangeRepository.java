@@ -17,4 +17,5 @@ public interface EventPageChangeRepository extends MongoRepository<EventPageChan
     int  countByUserId(String userId);
 
     int countByUserIdAndClientTimeBetween(String userId, LocalDateTime start, LocalDateTime end);
+    int countBySiteId(String siteId);
 }

@@ -41,4 +41,10 @@ public class EventMetricsController {
         return eventMetricsService.getEventMetricsByPeriodAndUserId(userId, period, year);
     }
 
+    @GetMapping("/user/{userId}/site/{siteId}")
+    @PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
+    public ResponseEntity<?> getEventMetricsByUserIdAndSiteId(@PathVariable String userId, @PathVariable String siteId) {
+        return eventMetricsService.getEventMetricsByUserIdAndSiteId(userId, siteId);
+    }
+
 }

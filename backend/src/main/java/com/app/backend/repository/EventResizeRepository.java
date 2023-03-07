@@ -13,4 +13,5 @@ public interface EventResizeRepository extends MongoRepository<EventResize, Stri
     List<EventResize> findAllBySite(Site site);
     int  countByUserId(String userId);
     int countByUserIdAndClientTimeBetween(String userId, LocalDateTime start, LocalDateTime end);
+    int countBySiteId(String siteId);
 }

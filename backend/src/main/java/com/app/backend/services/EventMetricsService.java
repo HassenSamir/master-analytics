@@ -3,12 +3,10 @@ package com.app.backend.services;
 import com.app.backend.dto.response.EventMetricsDTO;
 import com.app.backend.dto.response.EventMetricsDataDTO;
 import com.app.backend.dto.response.EventMetricsPeriodDTO;
+import com.app.backend.dto.response.SiteEventMetricsDTO;
 import com.app.backend.handler.ErrorResponse;
 import com.app.backend.models.*;
-import com.app.backend.repository.EventClickRepository;
-import com.app.backend.repository.EventPageChangeRepository;
-import com.app.backend.repository.EventResizeRepository;
-import com.app.backend.repository.UserRepository;
+import com.app.backend.repository.*;
 import com.app.backend.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +28,9 @@ public class EventMetricsService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private SiteRepository siteRepository;
 
     @Autowired
     private EventClickRepository eventClickRepository;
@@ -190,5 +191,45 @@ public class EventMetricsService {
 
         // Retourner la réponse avec un code d'état OK
         return ResponseEntity.status(HttpStatus.OK).body(eventMetricsPeriodDTO);
+    }
+
+    public ResponseEntity<?> getEventMetricsByUserIdAndSiteId(String userId, String siteId) {
+        // Vérifier si l'utilisateur existe
+        ResponseEntity<?> isUserOnDb = Utils.checkIfUserExistById(userRepository, userId);
+        if (isUserOnDb != null) {
+            return isUserOnDb;
+        }
+
+        // Vérifier si l'utilisateur est autorisé à accéder à la ressource
+        if (!Utils.isAuthorized(userId, userRepository)) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new ErrorResponse(HttpStatus.UNAUTHORIZED.value(), "Unauthorized", "You are not authorized to access this resource"));
+        }
+
+        Optional<Site> siteOptional = siteRepository.findByIdAndUserId(siteId, userId);
+        if (siteOptional.isEmpty()) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new ErrorResponse(HttpStatus.NOT_FOUND.value(), "Not Found", "Site not found or unauthorized"));
+        }
+        Site site = siteOptional.get();
+
+        // Récupérer le nombre d'événements de chaque type pour le site spécifié
+        int clickCount = eventClickRepository.countBySiteId(siteId);
+        int resizeCount = eventResizeRepository.countBySiteId(siteId);
+        int pageChangeCount = eventPageChangeRepository.countBySiteId(siteId);
+        int customCount = 0;
+
+        // Calculer le total d'événements
+        int total = clickCount + resizeCount + pageChangeCount;
+
+        // Formater les données en un objet SiteEventMetricsDTO
+        SiteEventMetricsDTO eventMetrics = new SiteEventMetricsDTO(site.getName(), clickCount, resizeCount, pageChangeCount, customCount, total);
+
+        // Retourner la réponse avec un code d'état OK
+        return ResponseEntity.status(HttpStatus.OK).body(eventMetrics);
     }
 }

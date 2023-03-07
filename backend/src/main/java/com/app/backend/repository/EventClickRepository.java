@@ -18,6 +18,6 @@ public interface EventClickRepository extends MongoRepository<EventClick, String
 
     int  countByUserId(String userId);
     int countByUserIdAndClientTimeBetween(String userId, LocalDateTime start, LocalDateTime end);
-
+    int countBySiteId(String siteId);
 
 }
