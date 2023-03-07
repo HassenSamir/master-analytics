@@ -15,4 +15,6 @@ public interface SiteRepository extends MongoRepository<Site, String> {
 
     Optional<Site> findByApiKey(String apiKey);
 
+    Optional<Site> findByIdAndUserId(String id, String userId);
+
 }

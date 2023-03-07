@@ -62,9 +62,14 @@ public class EventController {
         return eventService.findAllEventsByTypeAndUserId(type, userId);
     }
 
+    @GetMapping("/site/{siteId}")
+    @PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
+    public ResponseEntity<?> getAllEventsByTypeAndSiteId(@PathVariable String siteId,@RequestParam(name = "type", required = false, defaultValue = "") String type) throws IOException {
+        return eventService.findAllEventsByTypeAndSiteId(type, siteId);
+    }
+
 
     //Get All Events for one site
-
     @PostMapping("/click/{apiKey}")
     public ResponseEntity<?> createClickEvent(@Valid @RequestBody EventClickDTO clickEventDTO, @PathVariable String apiKey, HttpServletRequest request) throws IOException {
         return eventService.createClickEvent(clickEventDTO, request, apiKey);

@@ -7,12 +7,15 @@ import com.app.backend.handler.ErrorResponse;
 import com.app.backend.models.*;
 import com.app.backend.payload.response.EventResponse;
 import com.app.backend.repository.*;
+import com.app.backend.security.services.UserDetailsImpl;
 import com.app.backend.utils.Utils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import java.io.IOException;
@@ -88,6 +91,51 @@ public class EventServices {
             response = new EventResponse(type, data);
         } else if (type.equalsIgnoreCase("resize")) {
             List<EventResize> resizeEvents = eventResizeRepository.findAllByUserId(userId);
+            data.setResizeEvents(resizeEvents);
+            response = new EventResponse(type, data);
+        } else {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Bad Request", "Invalid event type: " + type));
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    public ResponseEntity<?> findAllEventsByTypeAndSiteId(String type, String siteId) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // Extract user id from token
+        String userId = ((UserDetailsImpl) authentication.getPrincipal()).getId();
+
+        // Check if the site exists and is associated with the user
+        Optional<Site> siteOptional = siteRepository.findByIdAndUserId(siteId, userId);
+        if (siteOptional.isEmpty()) {
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new ErrorResponse(HttpStatus.NOT_FOUND.value(), "Not Found", "Site not found or unauthorized"));
+        }
+        Site site = siteOptional.get();
+
+        EventData data = new EventData();
+        EventResponse response;
+        if (type.isEmpty()){
+            response = new EventResponse("all", data);
+            data.setClickEvents(eventClickRepository.findAllBySite(site));
+            data.setPageChangeEvents(eventPageChangeRepository.findAllBySite(site));
+            data.setResizeEvents(eventResizeRepository.findAllBySite(site));
+        } else if (type.equalsIgnoreCase("click")) {
+            List<EventClick> clickEvents = eventClickRepository.findAllBySite(site);
+            data.setClickEvents(clickEvents);
+            response = new EventResponse(type, data);
+        } else if (type.equalsIgnoreCase("page_change")) {
+            List<EventPageChange> pageChangesEvents = eventPageChangeRepository.findAllBySite(site);
+            data.setPageChangeEvents(pageChangesEvents);
+            response = new EventResponse(type, data);
+        } else if (type.equalsIgnoreCase("resize")) {
+            List<EventResize> resizeEvents = eventResizeRepository.findAllBySite(site);
             data.setResizeEvents(resizeEvents);
             response = new EventResponse(type, data);
         } else {
