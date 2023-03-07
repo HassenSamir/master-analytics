@@ -1,10 +1,10 @@
 import './App.css';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Admin, Dashboard, Home, Login, NotFound, SignIn, UnAuthorized } from './pages';
+import { Admin, Dashboard, Home, Login, NotFound, SignUp, UnAuthorized } from './pages';
 import React, { useEffect, useState } from 'react';
 import analyticsScript from './scripts/analyticsScript.js';
 import PropTypes from 'prop-types';
-import NotLoggedNavBar from './components/notloggednavbar/NotLoggedNavBar';
+//import NotLoggedNavBar from './components/notloggednavbar/NotLoggedNavBar';
 import { AuthProvider } from './contexts/AuthProvider';
 import { ROLE } from './utils/utils';
 
@@ -44,19 +44,12 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        {!user && <NotLoggedNavBar />}
+        {/*!user && <NotLoggedNavBar />*/}
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login setUser={setUser} />} />
-          <Route path="/signin" element={<SignIn />} />
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute user={user} roles={[ROLE.USER, ROLE.MOD]}>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/signup" element={<SignUp />} />
+          <Route path="/dashboard" element={<Dashboard user={user} />} />
           <Route
             path="/admin"
             element={
