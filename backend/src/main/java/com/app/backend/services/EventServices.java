@@ -180,7 +180,7 @@ public class EventServices {
 
         // Créer un nouvel objet événement de clic
         EventClick clickEvent = new EventClick(
-                clickEventDTO.getUserId(),
+                site.getUser().getId(),
                 clickEventDTO.getClientTime(),
                 clickEventDTO.getCssSelector(),
                 clickEventDTO.getInnerText(),
@@ -218,7 +218,7 @@ public class EventServices {
 
         // Créer un nouvel objet événement page change
         EventPageChange pageChangeEvent = new EventPageChange(
-                pageChangeEventDTO.getUserId(),
+                site.getUser().getId(),
                 pageChangeEventDTO.getOldPage(),
                 pageChangeEventDTO.getNewPage(),
                 pageChangeEventDTO.getClientTime(),
@@ -256,7 +256,7 @@ public class EventServices {
 
         // Créer un nouvel objet événement resize
         EventResize eventResize = new EventResize(
-                eventResizeDTO.getUserId(),
+                site.getUser().getId(),
                 eventResizeDTO.getScreenWidth(),
                 eventResizeDTO.getScreenHeight(),
                 eventResizeDTO.getClientTime(),

@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 @Document(collection = "event_resize")
-public class EventResize {
+public class EventResize implements Event{
     @Id
     private String id;
     private String userId;

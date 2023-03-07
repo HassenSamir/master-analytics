@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 @Document(collection = "event_page_change")
-public class EventPageChange {
+public class EventPageChange implements Event{
     @Id
     private String id;
     private String userId;

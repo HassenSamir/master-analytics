@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EventClickDTO {
-    private String userId;
     private LocalDateTime clientTime;
     private String cssSelector;
     private String innerText;

@@ -1,6 +1,7 @@
 package com.app.backend.utils;
 
 import com.app.backend.handler.ErrorResponse;
+import com.app.backend.models.Event;
 import com.app.backend.models.Site;
 import com.app.backend.models.User;
 import com.app.backend.repository.SiteRepository;
@@ -15,7 +16,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Optional;
+import java.time.DayOfWeek;
+import java.time.Month;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Utils {
 
@@ -80,5 +84,38 @@ public class Utils {
         String protocol2 = u2.getProtocol();
 
         return !(host1.equals(host2) && protocol1.equals(protocol2));
+    }
+
+    public static Map<String, Integer> groupEventsByPeriod(List<? extends Event> events, String period) {
+        Map<String, Integer> result = new LinkedHashMap<>();
+
+        switch (period) {
+            case "month" -> {
+                Map<String, Integer> groupedMonths = events.stream()
+                        .collect(Collectors.groupingBy(event -> event.getClientTime().getMonth().toString(), Collectors.summingInt(e -> 1)));
+                List<String> months = Arrays.stream(Month.values()).map(Month::toString).toList();
+                for (String month : months) {
+                    result.put(month, groupedMonths.getOrDefault(month, 0));
+                }
+            }
+            case "week" -> {
+                Map<String, Integer> groupedWeeks = events.stream()
+                        .collect(Collectors.groupingBy(event -> event.getClientTime().getDayOfWeek().toString(), Collectors.summingInt(e -> 1)));
+                List<String> daysOfWeek = Arrays.stream(DayOfWeek.values()).map(DayOfWeek::toString).toList();
+                for (String dayOfWeek : daysOfWeek) {
+                    result.put(dayOfWeek, groupedWeeks.getOrDefault(dayOfWeek, 0));
+                }
+            }
+            case "day" -> {
+                Map<String, Integer> groupedDays = events.stream()
+                        .collect(Collectors.groupingBy(event -> String.format("%02d", event.getClientTime().getHour()), Collectors.summingInt(e -> 1)));
+                for (int i = 0; i <= 23; i++) {
+                    result.put(String.format("%02d", i), groupedDays.getOrDefault(String.format("%02d", i), 0));
+                }
+            }
+            default -> throw new IllegalArgumentException("Invalid period value: " + period);
+        }
+
+        return result;
     }
 }

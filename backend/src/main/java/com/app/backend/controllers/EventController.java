@@ -28,7 +28,6 @@ public class EventController {
     UserRepository userRepository;
 
 
-
     // Structure this with object click, pagechange, resize rathen than an Array because it is hard to differenciate
     //paginate because they will be a lot of data
     //add params like date etc
@@ -53,21 +52,16 @@ public class EventController {
         }
     }
 
-
-
-
     @GetMapping("/user/{userId}")
     @PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
     public ResponseEntity<?> getAllEventsByTypeAndUserId(@PathVariable String userId,@RequestParam(name = "type", required = false, defaultValue = "") String type) throws IOException {
         return eventService.findAllEventsByTypeAndUserId(type, userId);
     }
-
     @GetMapping("/site/{siteId}")
     @PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
     public ResponseEntity<?> getAllEventsByTypeAndSiteId(@PathVariable String siteId,@RequestParam(name = "type", required = false, defaultValue = "") String type) throws IOException {
         return eventService.findAllEventsByTypeAndSiteId(type, siteId);
     }
-
 
     //Get All Events for one site
     @PostMapping("/click/{apiKey}")

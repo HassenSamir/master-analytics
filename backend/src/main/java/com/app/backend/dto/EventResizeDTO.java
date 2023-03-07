@@ -12,8 +12,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 public class EventResizeDTO {
-    private String id;
-    private String userId;
     private int screenWidth;
     private int screenHeight;
     private LocalDateTime clientTime;

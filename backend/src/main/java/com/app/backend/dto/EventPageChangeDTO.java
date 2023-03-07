@@ -12,8 +12,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 public class EventPageChangeDTO {
-    private String id;
-    private String userId;
     private String oldPage;
     private String newPage;
     private LocalDateTime clientTime;
