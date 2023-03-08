@@ -21,7 +21,7 @@ import MouseIcon from '@mui/icons-material/Mouse';
 import FindInPageIcon from '@mui/icons-material/FindInPage';
 import AspectRatioIcon from '@mui/icons-material/AspectRatio';
 import TuneIcon from '@mui/icons-material/Tune';
-import { AreaChart, BarChart } from '../../../../components';
+import { AreaChart, BarChart, DoughnutChart } from '../../../../components';
 import { getSitesByUserId } from '../../../../api/sites.services';
 
 const EventCards = ({ title, icon, number }) => {
@@ -125,7 +125,7 @@ const GlobalView = () => {
     <div className="globalview-container">
       <div className="globalview-first-section">
         <EventMetricsCards data={eventsTotalMetrics} />
-        <Stack>
+        <Paper elevation={3} sx={{ display: 'flex', width: 'auto', height: '100%' }}>
           {eventsMetricsPeriod && (
             <AreaChart
               title={eventsMetricsPeriod.title}
@@ -133,18 +133,18 @@ const GlobalView = () => {
               events={eventsMetricsPeriod.values}
             />
           )}
-        </Stack>
+        </Paper>
       </div>
       {sites?.length > 0 && (
         <Stack>
           <Stack>
             <FormControl variant="filled" sx={{ width: 250 }}>
-              <InputLabel id="demo-simple-select-label">Sites</InputLabel>
+              <InputLabel id="demo-simple-select-label">Site</InputLabel>
               <Select
                 labelId="demo-simple-select-label"
                 id="demo-simple-select"
                 value={currentSite}
-                label="Sites"
+                label="Site"
                 onChange={handleCurrSiteUpdate}>
                 {sites.map((s) => {
                   return (
@@ -156,18 +156,26 @@ const GlobalView = () => {
               </Select>
             </FormControl>
           </Stack>
+
           <div className="globalview-second-section">
-            <Stack sx={{ backgroundColor: 'orange' }}>
+            <Paper
+              elevation={3}
+              sx={{ display: 'flex', width: 'auto', height: '100%', padding: '10px' }}>
               {eventsMetricsCurrentSite && (
                 <BarChart
                   labels={eventsMetricsCurrentSite.labels}
                   events={eventsMetricsCurrentSite.values}
                 />
               )}
-            </Stack>
-            <Stack sx={{ backgroundColor: 'cyan', height: '100%' }}>
-              <Typography>POURCENTAGE</Typography>
-            </Stack>
+            </Paper>
+            <Paper elevation={3} sx={{ height: '100%', width: 'auto', padding: '25px' }}>
+              {eventsMetricsCurrentSite && (
+                <DoughnutChart
+                  labels={eventsMetricsCurrentSite.labels}
+                  events={eventsMetricsCurrentSite.values}
+                />
+              )}
+            </Paper>
           </div>
         </Stack>
       )}

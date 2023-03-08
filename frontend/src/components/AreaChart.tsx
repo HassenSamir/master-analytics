@@ -56,10 +56,10 @@ export const AreaChart = ({ labels = STATIC_LABELS, events, title = 'Events' }) 
     },
     scales: {
       y: {
-        ticks: { color: 'white', beginAtZero: true, precision: 0 }
+        ticks: { color: 'black', beginAtZero: true, precision: 0 }
       },
       x: {
-        ticks: { color: 'white', beginAtZero: true, precision: 0 }
+        ticks: { color: 'black', beginAtZero: true, precision: 0 }
       }
     }
   };
