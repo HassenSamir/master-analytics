@@ -20,7 +20,7 @@ import {
   ResizeView,
   SiteManagement,
   SiteOverView
-} from './components';
+} from './tabs';
 
 function Dashboard() {
   const { collapseSidebar } = useProSidebar();

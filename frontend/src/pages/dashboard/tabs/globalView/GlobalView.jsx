@@ -23,6 +23,7 @@ import AspectRatioIcon from '@mui/icons-material/AspectRatio';
 import TuneIcon from '@mui/icons-material/Tune';
 import { AreaChart, BarChart, DoughnutChart } from '../../../../components';
 import { getSitesByUserId } from '../../../../api/sites.services';
+import { AllEventsTable } from './components';
 
 const EventCards = ({ title, icon, number }) => {
   return (
@@ -179,7 +180,9 @@ const GlobalView = () => {
           </div>
         </Stack>
       )}
-      <div className="globalview-third-section">HELLO</div>
+      <div className="globalview-third-section">
+        <AllEventsTable />
+      </div>
     </div>
   );
 };
