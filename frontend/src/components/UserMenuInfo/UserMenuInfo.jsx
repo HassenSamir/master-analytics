@@ -1,10 +1,13 @@
 import { Avatar, Fade, IconButton, Menu, MenuItem, Typography } from '@mui/material';
-import React from 'react';
+import React, { useEffect } from 'react';
 import './UserMenuInfo.css';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import PropTypes from 'prop-types';
+import { AuthContext } from '../../contexts/AuthProvider';
+import LoadingText from '../LoadingText/LoadingText';
 
-const UserMenuInfo = ({ username }) => {
+const UserMenuInfo = () => {
+  const { user } = React.useContext(AuthContext);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
   const handleClick = (event) => {
@@ -14,10 +17,14 @@ const UserMenuInfo = ({ username }) => {
     setAnchorEl(null);
   };
 
+  useEffect(() => {
+    console.log('UserMenuInfo', user);
+  }, [user]);
+
   return (
     <div className="user-menu-container">
       <Avatar alt="Remy Sharp" src="https://mui.com/static/images/avatar/1.jpg" />
-      <Typography>{username || 'Remy Sharp'}</Typography>
+      {user ? <Typography>{user?.username || 'Remy Sharp'}</Typography> : <LoadingText />}
       <IconButton
         aria-label="more"
         id="long-button"

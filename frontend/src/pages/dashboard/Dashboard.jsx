@@ -22,7 +22,7 @@ import {
   SiteOverView
 } from './components';
 
-function Dashboard({ user }) {
+function Dashboard() {
   const { collapseSidebar } = useProSidebar();
   const STATIC_TABS = {
     dashboard: {
@@ -179,7 +179,7 @@ function Dashboard({ user }) {
               <SearchIcon />
             </IconButton>
           </Paper>
-          <UserMenuInfo user={user} />
+          <UserMenuInfo />
         </Stack>
         <Stack className="dashboard-content-descriptions">
           <Typography variant="h4" fontWeight="bold">

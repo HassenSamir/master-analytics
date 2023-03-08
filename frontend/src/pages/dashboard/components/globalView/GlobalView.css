@@ -1,0 +1,48 @@
+.globalview-container{
+  display: flex;
+  flex-direction: column;
+  gap:20px;
+}
+
+
+.globalview-events-metrics-card{
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 5px;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.globalview-first-section{
+  display: grid;
+  width: 100%;
+  grid-template-columns: 3fr 6fr;
+  grid-template-rows: 1fr;
+  align-items: center;
+  height: auto;
+  gap: 25px;
+}
+
+.globalview-second-section{
+  display: grid;
+  width: 100%;
+  grid-template-columns: 4fr 2fr;
+  grid-template-rows: 1fr;
+  align-items: center;
+  height: auto;
+  width: 100%;
+  gap: 15px; 
+  border: 2px solid white;
+}
+
+.globalview-third-section{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 500px;
+  width: 100%;
+  gap: 15px; 
+  background-color: pink;
+}

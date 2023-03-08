@@ -7,6 +7,7 @@
    "extends": [
         "eslint:recommended", 
         "plugin:react/recommended", 
+        "plugin:@typescript-eslint/recommended",
         "plugin:prettier/recommended"
     ],
     "overrides": [
@@ -16,9 +17,11 @@
         "sourceType": "module"
     },
     "plugins": [
-        "react"
+        "react", 
+        "@typescript-eslint"
     ],
     "rules": {
-        "react/react-in-jsx-scope": "off"
+        "react/react-in-jsx-scope": "off",
+        "@typescript-eslint/no-unused-vars": "error"
     }
 }

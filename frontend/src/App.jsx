@@ -1,11 +1,10 @@
 import './App.css';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { Admin, Dashboard, Home, Login, NotFound, SignUp, UnAuthorized } from './pages';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import analyticsScript from './scripts/analyticsScript.js';
 import PropTypes from 'prop-types';
-//import NotLoggedNavBar from './components/notloggednavbar/NotLoggedNavBar';
-import { AuthProvider } from './contexts/AuthProvider';
+import { AuthContext } from './contexts/AuthProvider';
 import { ROLE } from './utils/utils';
 
 const hasRole = (user, roles) => {
@@ -14,9 +13,9 @@ const hasRole = (user, roles) => {
 };
 
 const ProtectedRoute = ({ user, roles, children }) => {
-  console.log('ProtectedRoute', { user, roles, children });
+  const userFromStorage = localStorage.getItem('master-analytics-user');
 
-  if (!user || !hasRole(user, roles)) {
+  if (!userFromStorage && (!user || !hasRole(user, roles))) {
     return <Navigate to="/unauthorized" replace />;
   }
 
@@ -24,7 +23,7 @@ const ProtectedRoute = ({ user, roles, children }) => {
 };
 
 function App() {
-  const [user, setUser] = useState(null);
+  const { user } = React.useContext(AuthContext);
 
   useEffect(() => {
     const script = document.createElement('script');
@@ -42,27 +41,29 @@ function App() {
   }, [user]);
 
   return (
-    <AuthProvider>
-      <Router>
-        {/*!user && <NotLoggedNavBar />*/}
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login setUser={setUser} />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route path="/dashboard" element={<Dashboard user={user} />} />
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute user={user} roles={[ROLE.ADMIN]}>
-                <Admin />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/unauthorized" element={<UnAuthorized />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Router>
-    </AuthProvider>
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<SignUp />} />
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute user={user} roles={[ROLE.USER]}>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute user={user} roles={[ROLE.ADMIN]}>
+            <Admin />
+          </ProtectedRoute>
+        }
+      />
+      <Route path="/unauthorized" element={<UnAuthorized />} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
   );
 }
 
