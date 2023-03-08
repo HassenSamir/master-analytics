@@ -1,6 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { Paper, Typography, Stack, CircularProgress } from '@mui/material';
-import { getEventsMetrics, getEventsMetricsPeriod } from '../../../../api/events.service';
+import {
+  Paper,
+  Typography,
+  Stack,
+  CircularProgress,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem
+} from '@mui/material';
+import {
+  getEventsMetrics,
+  getEventsMetricsPeriod,
+  getEventsMetricsBySiteAndUserId
+} from '../../../../api/events.service';
 import './GlobalView.css';
 import PropTypes from 'prop-types';
 import { AuthContext } from '../../../../contexts/AuthProvider';
@@ -9,6 +22,7 @@ import FindInPageIcon from '@mui/icons-material/FindInPage';
 import AspectRatioIcon from '@mui/icons-material/AspectRatio';
 import TuneIcon from '@mui/icons-material/Tune';
 import { AreaChart, BarChart } from '../../../../components';
+import { getSitesByUserId } from '../../../../api/sites.services';
 
 const EventCards = ({ title, icon, number }) => {
   return (
@@ -41,6 +55,10 @@ const GlobalView = () => {
   const [eventsTotalMetrics, setEventsTotalMetrics] = useState();
   const [eventsMetricsPeriod, setEventsMetricsPeriod] = useState();
   const { user } = React.useContext(AuthContext);
+  const [sites, setSites] = useState([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [currentSite, setCurrentSite] = useState();
+  const [eventsMetricsCurrentSite, setEventsMetricsCurrentSite] = useState();
 
   const fetchEventMetrics = async () => {
     const data = await getEventsMetrics(user.id);
@@ -62,10 +80,41 @@ const GlobalView = () => {
     }
   };
 
+  const fetchEventsMetricsBySiteAndUserId = async (userId, siteId) => {
+    const events = await getEventsMetricsBySiteAndUserId(userId, siteId);
+    console.log('fetchEventsMetricsBySiteAndUserId', events);
+    const labels = ['Click', 'PageChange', 'Resize', 'Custom'];
+    const values = [events.click, events.pageChange, events.resize, events.custom];
+    setEventsMetricsCurrentSite({
+      labels,
+      values
+    });
+  };
+
+  const fetchSitesForUser = async () => {
+    const sites = await getSitesByUserId(user.id);
+    console.log('fetchEventsMetricsBySiteAndUserId', sites);
+    if (sites) {
+      setSites(sites);
+      setCurrentSite(sites[0].id);
+      fetchEventsMetricsBySiteAndUserId(user.id, sites[0].id);
+    }
+  };
+
+  const handleCurrSiteUpdate = (e) => {
+    console.log(e);
+    const currSite = sites.filter((x) => x.id === e.target.value)[0];
+
+    console.log(currSite);
+    setCurrentSite(currSite.id);
+    fetchEventsMetricsBySiteAndUserId(user.id, currSite.id);
+  };
+
   useEffect(() => {
     if (user) {
       fetchEventMetrics();
       fetchEventsMetricsPeriod();
+      fetchSitesForUser();
     }
   }, []);
   useEffect(() => {
@@ -86,14 +135,42 @@ const GlobalView = () => {
           )}
         </Stack>
       </div>
-      <div className="globalview-second-section">
-        <Stack sx={{ backgroundColor: 'orange' }}>
-          <BarChart />
+      {sites?.length > 0 && (
+        <Stack>
+          <Stack>
+            <FormControl variant="filled" sx={{ width: 250 }}>
+              <InputLabel id="demo-simple-select-label">Sites</InputLabel>
+              <Select
+                labelId="demo-simple-select-label"
+                id="demo-simple-select"
+                value={currentSite}
+                label="Sites"
+                onChange={handleCurrSiteUpdate}>
+                {sites.map((s) => {
+                  return (
+                    <MenuItem key={s.id} value={s.id}>
+                      {s.name}
+                    </MenuItem>
+                  );
+                })}
+              </Select>
+            </FormControl>
+          </Stack>
+          <div className="globalview-second-section">
+            <Stack sx={{ backgroundColor: 'orange' }}>
+              {eventsMetricsCurrentSite && (
+                <BarChart
+                  labels={eventsMetricsCurrentSite.labels}
+                  events={eventsMetricsCurrentSite.values}
+                />
+              )}
+            </Stack>
+            <Stack sx={{ backgroundColor: 'cyan', height: '100%' }}>
+              <Typography>POURCENTAGE</Typography>
+            </Stack>
+          </div>
         </Stack>
-        <Stack sx={{ backgroundColor: 'cyan', height: '100%' }}>
-          <Typography>POURCENTAGE</Typography>
-        </Stack>
-      </div>
+      )}
       <div className="globalview-third-section">HELLO</div>
     </div>
   );

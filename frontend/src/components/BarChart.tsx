@@ -9,7 +9,6 @@ import {
   Tooltip,
   Legend
 } from 'chart.js';
-import { faker } from '@faker-js/faker';
 import { Chart } from 'react-chartjs-2';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
@@ -21,27 +20,31 @@ export const BarChart = ({ labels = STATIC_LABELS, events, title = 'Events' }) =
     responsive: true,
     plugins: {
       legend: {
-        position: 'top' as const
+        display: false
+      }
+    },
+    title: {
+      display: false,
+      text: title
+    },
+    scales: {
+      y: {
+        ticks: { color: 'white', beginAtZero: true, precision: 0 }
       },
-      title: {
-        display: true,
-        text: title
+      x: {
+        ticks: { color: 'white', beginAtZero: true, precision: 0 }
       }
     }
   };
 
   const data = {
     labels,
-    datasets: events || [
+    datasets: [
       {
-        label: 'Dataset 1',
-        data: labels.map(() => faker.datatype.number({ min: 0, max: 1000 })),
+        fill: true,
+        label: '',
+        data: events,
         backgroundColor: 'rgba(255, 99, 132, 0.5)'
-      },
-      {
-        label: 'Dataset 2',
-        data: labels.map(() => faker.datatype.number({ min: 0, max: 1000 })),
-        backgroundColor: 'rgba(53, 162, 235, 0.5)'
       }
     ]
   };
