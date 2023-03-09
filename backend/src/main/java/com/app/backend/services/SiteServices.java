@@ -52,7 +52,7 @@ public class SiteServices {
         User user = optionalUser.get();
 
         Site site = new Site();
-        site.setUser(user);
+        site.setUserId(user.getId());
         site.setName(siteDto.getName());
         site.setUrl(siteDto.getUrl());
         site.setDescription(siteDto.getDescription());
@@ -110,7 +110,7 @@ public class SiteServices {
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
         String loggedInUserId = authentication.getName();
 
-        if (!site.getUser().getId().equals(loggedInUserId) && !isAdmin) {
+        if (!site.getUserId().equals(loggedInUserId) && !isAdmin) {
             throw new AccessDeniedException("You are not authorized to delete this site");
         }
 
@@ -146,7 +146,7 @@ public class SiteServices {
         Site site = optionalSite.get();
 
         // Vérifier si le nom du site est unique pour l'utilisateur
-        if (siteRepository.findByUserIdAndName(site.getUser().getId(), updatedSite.getName()).isPresent()) {
+        if (siteRepository.findByUserIdAndName(site.getUserId(), updatedSite.getName()).isPresent()) {
             throw new Exception("Site name already exists for user");
         }
 
