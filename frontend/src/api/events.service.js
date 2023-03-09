@@ -16,8 +16,18 @@ export const getEventsMetricsBySiteAndUserId = async (userId, siteId) => {
     .then((response) => response.data);
 };
 
-export const getEventsByTypeAndUserId = async (userId, type, page = 0, size = 5) => {
+export const getEventsByTypeAndUserId = async (userId, page = 0, size = 5, type = null) => {
+  const baseUrl = `/events/user/${userId}?page=${page}&size=${size}`;
+  const url = !type ? baseUrl : baseUrl + `&type=${type}`;
+  return authInterceptor.get(url).then((response) => {
+    return response.data;
+  });
+};
+
+export const getLatestEventsByUserId = async (userId, type, page = 0, size = 5) => {
   return authInterceptor
-    .get(`/events/user/${userId}?page=${page}&size=${size}${type && '&type=' + type}`)
-    .then((response) => response.data);
+    .get(`/events/metrics/latest/${userId}?type=${type}&page=${page}&size=${size}`)
+    .then((response) => {
+      return response.data;
+    });
 };

@@ -1,10 +1,8 @@
-/* eslint-disable no-unused-vars */
 import React, { useContext, useState } from 'react';
 import { Paper, Typography, TextField, Button, Stack } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import './Login.css';
 import { userSignIn } from '../../api/auth.service';
-import PropTypes from 'prop-types';
 import { useNavigate } from 'react-router-dom';
 import { ROLE } from '../../utils/utils';
 import NotLoggedNavBar from '../../components/notloggednavbar/NotLoggedNavBar';
@@ -82,7 +80,3 @@ const Login = () => {
 };
 
 export default Login;
-
-Login.propTypes = {
-  setUser: PropTypes.func.isRequired
-};

@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React, { useState } from 'react';
+import React, { useEffect, useState, memo, useCallback } from 'react';
 import {
   TableContainer,
   Paper,
@@ -12,43 +12,10 @@ import {
   TablePagination,
   Checkbox
 } from '@mui/material';
+import { getLatestEventsByUserId } from '../../../../../../api/events.service';
+import { AuthContext } from '../../../../../../contexts/AuthProvider';
 
-/*
-const HEADER = ['Type', 'Url', 'SiteName', 'Time', 'clientUserAgent'];
-
-const DATA = [
-  {
-    type: 'John Doe',
-    url: 'john.doe',
-    site_name: 'site_name',
-    time: 'time',
-    userAgent: 'userAgent'
-  }
-*/
-const HEADER = ['ID', 'Name', 'Email', 'Phone'];
-
-const DATA = [
-  { id: 1, name: 'John Doe', email: 'john.doe@example.com', phone: '+1-555-1234' },
-  { id: 2, name: 'Jane Smith', email: 'jane.smith@example.com', phone: '+1-555-5678' },
-  { id: 3, name: 'Bob Johnson', email: 'bob.johnson@example.com', phone: '+1-555-9012' },
-  { id: 4, name: 'Alice Lee', email: 'alice.lee@example.com', phone: '+1-555-3456' },
-  { id: 5, name: 'Charlie Brown', email: 'charlie.brown@example.com', phone: '+1-555-7890' },
-  { id: 6, name: 'Eva Davis', email: 'eva.davis@example.com', phone: '+1-555-2345' },
-  { id: 7, name: 'Frank Miller', email: 'frank.miller@example.com', phone: '+1-555-6789' },
-  { id: 8, name: 'Grace Kim', email: 'grace.kim@example.com', phone: '+1-555-0123' },
-  { id: 9, name: 'Henry Adams', email: 'henry.adams@example.com', phone: '+1-555-4567' },
-  { id: 10, name: 'Isabella Brown', email: 'isabella.brown@example.com', phone: '+1-555-8901' },
-  { id: 11, name: 'Jack Wilson', email: 'jack.wilson@example.com', phone: '+1-555-2345' },
-  { id: 12, name: 'Karen Lee', email: 'karen.lee@example.com', phone: '+1-555-6789' },
-  { id: 13, name: 'Larry Johnson', email: 'larry.johnson@example.com', phone: '+1-555-0123' },
-  { id: 14, name: 'Mary Johnson', email: 'mary.johnson@example.com', phone: '+1-555-4567' },
-  { id: 15, name: 'Nathan Davis', email: 'nathan.davis@example.com', phone: '+1-555-8901' },
-  { id: 16, name: 'Olivia Taylor', email: 'olivia.taylor@example.com', phone: '+1-555-2345' },
-  { id: 17, name: 'Peter Brown', email: 'peter.brown@example.com', phone: '+1-555-6789' },
-  { id: 18, name: 'Rachel Wilson', email: 'rachel.wilson@example.com', phone: '+1-555-0123' },
-  { id: 19, name: 'Samuel Lee', email: 'samuel.lee@example.com', phone: '+1-555-4567' },
-  { id: 20, name: 'Tina Johnson', email: 'tina.johnson@example.com', phone: '+1-555-8901' }
-];
+const HEADER = ['ID', 'Url', 'SiteName', 'Time', 'Ip Adress', 'clientUserAgent'];
 
 const styles = {
   container: {
@@ -71,10 +38,16 @@ const styles = {
   }
 };
 
-const AllEventsTable = ({ header = HEADER, data = DATA, isCheckbox = false }) => {
+const AllEventsTable = memo(({ type }) => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [selectedRows, setSelectedRows] = useState([]);
+  const [data, setData] = useState([]);
+  const [totalPages, setTotalPages] = useState();
+  const [totalElements, setTotalElements] = useState();
+  const isCheckbox = false;
+  const header = HEADER;
+  const { user } = React.useContext(AuthContext);
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
@@ -111,12 +84,33 @@ const AllEventsTable = ({ header = HEADER, data = DATA, isCheckbox = false }) =>
 
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
   };
 
   const isSelected = (id) => selectedRows.indexOf(id) !== -1;
 
-  return (
+  const fetchAllEvents = useCallback(async () => {
+    const resp = await getLatestEventsByUserId(user.id, type, page, rowsPerPage);
+    setTotalPages(resp.totalPages);
+    setTotalElements(resp.totalElements);
+    const newData = resp.data.map((e, index) => ({
+      id: index + 1 + rowsPerPage * page,
+      url: e.site.url,
+      site_name: e.site.name,
+      time: e.clientTime,
+      ipAddress: e.ipAddress,
+      clientUserAgent: e.clientUserAgent
+    }));
+
+    setData((s) => newData);
+  }, [user, page, rowsPerPage, type]);
+
+  useEffect(() => {
+    if (user) {
+      fetchAllEvents();
+    }
+  }, [user, page, rowsPerPage, type]);
+
+  return data?.length > 0 ? (
     <TableContainer component={Paper} style={styles.container}>
       <Table sx={{ minWidth: 650 }} aria-label="simple table" style={styles.table}>
         <TableHead>
@@ -137,7 +131,7 @@ const AllEventsTable = ({ header = HEADER, data = DATA, isCheckbox = false }) =>
           </TableRow>
         </TableHead>
         <TableBody style={styles.body}>
-          {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
+          {data.map((row) => {
             const isRowSelected = isSelected(row.id);
 
             return (
@@ -170,7 +164,7 @@ const AllEventsTable = ({ header = HEADER, data = DATA, isCheckbox = false }) =>
       </Table>
       <TablePagination
         component="div"
-        count={data.length}
+        count={totalElements}
         page={page}
         onPageChange={handleChangePage}
         rowsPerPage={rowsPerPage}
@@ -178,7 +172,11 @@ const AllEventsTable = ({ header = HEADER, data = DATA, isCheckbox = false }) =>
         rowsPerPageOptions={[5, 10, 25]}
       />
     </TableContainer>
+  ) : (
+    'Loading ...'
   );
-};
+});
+
+AllEventsTable.displayName = 'AllEventsTable';
 
 export default AllEventsTable;

@@ -60,6 +60,13 @@ const GlobalView = () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [currentSite, setCurrentSite] = useState();
   const [eventsMetricsCurrentSite, setEventsMetricsCurrentSite] = useState();
+  const EVENTS_TYPES = [
+    { id: 0, value: 'click' },
+    { id: 1, value: 'page_change' },
+    { id: 2, value: 'resize' }
+  ];
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [currentType, setCurrentType] = useState(EVENTS_TYPES[0].value);
 
   const fetchEventMetrics = async () => {
     const data = await getEventsMetrics(user.id);
@@ -109,6 +116,10 @@ const GlobalView = () => {
     console.log(currSite);
     setCurrentSite(currSite.id);
     fetchEventsMetricsBySiteAndUserId(user.id, currSite.id);
+  };
+
+  const handleCurrTypeUpdate = (e) => {
+    setCurrentType(e.target.value);
   };
 
   useEffect(() => {
@@ -180,8 +191,28 @@ const GlobalView = () => {
           </div>
         </Stack>
       )}
+
+      <Stack justifyContent="space-between" sx={{ marginBottom: '-30px' }}>
+        <FormControl variant="filled" sx={{ width: 250 }}>
+          <InputLabel id="demo-simple-select-label">Last Event Types</InputLabel>
+          <Select
+            labelId="demo-simple-select-label"
+            id="demo-simple-select"
+            value={currentType}
+            label="Event Types"
+            onChange={handleCurrTypeUpdate}>
+            {EVENTS_TYPES.map((s, index) => {
+              return (
+                <MenuItem key={index} value={s.value}>
+                  {s.value}
+                </MenuItem>
+              );
+            })}
+          </Select>
+        </FormControl>
+      </Stack>
       <div className="globalview-third-section">
-        <AllEventsTable />
+        <AllEventsTable type={currentType} />
       </div>
     </div>
   );
