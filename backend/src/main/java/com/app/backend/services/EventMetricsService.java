@@ -252,6 +252,14 @@ public class EventMetricsService {
         logger.info("pageChangeEvents {}", pageChangeEvents.stream().count());
         logger.info("resizeEvents {}", resizeEvents.stream().count());
 
+        // Calculer le nombre total d'événements disponibles pour chaque type d'événement
+        long totalClickEvents = clickEvents.getTotalElements();
+        long totalPageChangeEvents = pageChangeEvents.getTotalElements();
+        long totalResizeEvents = resizeEvents.getTotalElements();
+
+        // Calculer le nombre maximal d'événements que l'on peut afficher sur la page en fonction du nombre d'événements disponibles pour chaque type
+        int maxEventsPerPage = Math.min(size, (int) (totalClickEvents + totalPageChangeEvents + totalResizeEvents - pageable.getOffset()));
+
         // Concaténer les listes d'événements de tous les types
         List<EventI> events = new ArrayList<>();
 
@@ -271,12 +279,13 @@ public class EventMetricsService {
 
         logger.info("events size {}", events.size());
         // Paginer la liste d'événements
-        int start = 0;
-        int end = start + events.size();
+        int start = (int)pageable.getOffset();
+        int end = Math.min((start + maxEventsPerPage), events.size());
         logger.info("events start {}", start);
         logger.info("events end {}", end);
 
-        List<EventI> pagedEvents = events.subList(start, end);
+        List<EventI> pagedEvents = events.subList(0, end);
+        logger.info("pagedEvents {}", pagedEvents.size());
 
         EventResponseDTO response = new EventResponseDTO("latest", pagedEvents, pageable);
 
