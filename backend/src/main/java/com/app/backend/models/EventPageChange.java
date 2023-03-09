@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 @Document(collection = "event_page_change")
-public class EventPageChange implements Event{
+public class EventPageChange implements EventI {
     @Id
     private String id;
     private String userId;
@@ -28,7 +28,7 @@ public class EventPageChange implements Event{
     @DBRef
     private Site site;
 
-    public EventPageChange(String userId, String oldPage, String newPage, LocalDateTime clientTime, String clientUserAgent, String ipAddress, LocalDateTime serverTime,Site site) {
+    public EventPageChange(String userId, String oldPage, String newPage, LocalDateTime clientTime, String clientUserAgent, String ipAddress, LocalDateTime serverTime, Site site) {
         this.userId = userId;
         this.oldPage = oldPage;
         this.newPage = newPage;

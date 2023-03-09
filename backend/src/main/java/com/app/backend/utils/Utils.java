@@ -1,7 +1,7 @@
 package com.app.backend.utils;
 
 import com.app.backend.handler.ErrorResponse;
-import com.app.backend.models.Event;
+import com.app.backend.models.EventI;
 import com.app.backend.models.Site;
 import com.app.backend.models.User;
 import com.app.backend.repository.SiteRepository;
@@ -86,7 +86,7 @@ public class Utils {
         return !(host1.equals(host2) && protocol1.equals(protocol2));
     }
 
-    public static Map<String, Integer> groupEventsByPeriod(List<? extends Event> events, String period) {
+    public static Map<String, Integer> groupEventsByPeriod(List<? extends EventI> events, String period) {
         Map<String, Integer> result = new LinkedHashMap<>();
 
         switch (period) {

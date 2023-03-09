@@ -8,12 +8,13 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Repository
 public interface EventClickRepository extends MongoRepository<EventClick, String> {
 
     Page<EventClick> findAllByUserId(String userId, Pageable pageable);
+
+    Page<EventClick> findAllByUserIdOrderByClientTimeDesc(String userId, Pageable pageable);
 
     Page<EventClick> findAllBySite(Site site, Pageable pageable);
 

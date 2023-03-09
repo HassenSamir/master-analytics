@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 @Document(collection = "event_resize")
-public class EventResize implements Event{
+public class EventResize implements EventI {
     @Id
     private String id;
     private String userId;
@@ -28,7 +28,7 @@ public class EventResize implements Event{
     @DBRef
     private Site site;
 
-    public EventResize(String userId, int screenWidth, int screenHeight, LocalDateTime clientTime, String clientUserAgent, String ipAddress, LocalDateTime serverTime,Site site) {
+    public EventResize(String userId, int screenWidth, int screenHeight, LocalDateTime clientTime, String clientUserAgent, String ipAddress, LocalDateTime serverTime, Site site) {
         this.userId = userId;
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;

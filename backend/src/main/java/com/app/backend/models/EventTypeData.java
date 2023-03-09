@@ -9,6 +9,9 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class EventData {
-    private List<EventI> events;
+public class EventTypeData {
+    private List<EventClick> clickEvents;
+    private List<EventPageChange> pageChangeEvents;
+    private List<EventResize> resizeEvents;
+
 }

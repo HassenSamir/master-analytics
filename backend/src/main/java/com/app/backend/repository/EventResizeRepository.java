@@ -13,6 +13,8 @@ import java.util.List;
 public interface EventResizeRepository extends MongoRepository<EventResize, String> {
     Page<EventResize> findAllByUserId(String userId, Pageable pageable);
     Page<EventResize> findAllBySite(Site site, Pageable pageable);
+    Page<EventResize> findAllByUserIdOrderByClientTimeDesc(String userId, Pageable pageable);
+
     int  countByUserId(String userId);
     int countByUserIdAndClientTimeBetween(String userId, LocalDateTime start, LocalDateTime end);
     int countBySiteId(String siteId);

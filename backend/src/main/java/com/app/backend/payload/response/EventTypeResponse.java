@@ -1,6 +1,6 @@
 package com.app.backend.payload.response;
 
-import com.app.backend.models.EventData;
+import com.app.backend.models.EventTypeData;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,8 +9,8 @@ import org.springframework.data.domain.Pageable;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class EventResponse {
+public class EventTypeResponse {
     private String type;
-    private EventData data;
+    private EventTypeData data;
     private Pageable pageable;
 }

@@ -1,21 +1,11 @@
 package com.app.backend.controllers;
 
-import com.app.backend.dto.EventClickDTO;
-import com.app.backend.dto.EventPageChangeDTO;
-import com.app.backend.dto.EventResizeDTO;
-import com.app.backend.models.*;
-import com.app.backend.payload.response.EventResponse;
 import com.app.backend.repository.UserRepository;
 import com.app.backend.services.EventMetricsService;
-import com.app.backend.services.EventServices;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import java.io.IOException;
-import java.util.*;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -45,6 +35,15 @@ public class EventMetricsController {
     @PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
     public ResponseEntity<?> getEventMetricsByUserIdAndSiteId(@PathVariable String userId, @PathVariable String siteId) {
         return eventMetricsService.getEventMetricsByUserIdAndSiteId(userId, siteId);
+    }
+
+    @GetMapping("/latest/{userId}")
+    @PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
+    public ResponseEntity<?> getLastEventsMetricsByUserId(
+            @PathVariable String userId,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size) {
+        return eventMetricsService.getLastEventsMetricsByUserId(userId, page, size);
     }
 
 }

@@ -1,9 +1,6 @@
 package com.app.backend.services;
 
-import com.app.backend.dto.response.EventMetricsDTO;
-import com.app.backend.dto.response.EventMetricsDataDTO;
-import com.app.backend.dto.response.EventMetricsPeriodDTO;
-import com.app.backend.dto.response.SiteEventMetricsDTO;
+import com.app.backend.dto.response.*;
 import com.app.backend.handler.ErrorResponse;
 import com.app.backend.models.*;
 import com.app.backend.repository.*;
@@ -11,6 +8,8 @@ import com.app.backend.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +19,6 @@ import java.time.*;
 import java.time.format.TextStyle;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class EventMetricsService {
@@ -73,14 +71,6 @@ public class EventMetricsService {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    /**
-     * Returns the event metrics data for a given period and user ID
-     *
-     * @param userId the user ID
-     * @param period the period to get event metrics for
-     * @param year   the year to get event metrics for (optional)
-     * @return an instance of EventMetricsPeriodDTO containing the event metrics data
-     */
     public ResponseEntity<?> getEventMetricsByPeriodAndUserId(String userId, String period, Integer year) {
         // Vérifier si l'utilisateur existe
         ResponseEntity<?> isUserOnDb = Utils.checkIfUserExistById(userRepository, userId);
@@ -231,5 +221,44 @@ public class EventMetricsService {
 
         // Retourner la réponse avec un code d'état OK
         return ResponseEntity.status(HttpStatus.OK).body(eventMetrics);
+    }
+
+    public ResponseEntity<?> getLastEventsMetricsByUserId(String userId, int page, int size) {
+        // Vérifier si l'utilisateur existe
+        ResponseEntity<?> isUserOnDb = Utils.checkIfUserExistById(userRepository, userId);
+        if (isUserOnDb != null) {
+            return isUserOnDb;
+        }
+
+        if (!Utils.isAuthorized(userId, userRepository)) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new ErrorResponse(HttpStatus.UNAUTHORIZED.value(), "Unauthorized", "You are not authorized to access this resource"));
+        }
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        List<EventClick> clickEvents = eventClickRepository.findAllByUserIdOrderByClientTimeDesc(userId, pageable).getContent();
+        List<EventPageChange> pageChangeEvents = eventPageChangeRepository.findAllByUserIdOrderByClientTimeDesc(userId, pageable).getContent();
+        List<EventResize> resizeEvents = eventResizeRepository.findAllByUserIdOrderByClientTimeDesc(userId, pageable).getContent();
+
+        // Concaténer les listes d'événements de tous les types
+        List<EventI> events = new ArrayList<>();
+        events.addAll(clickEvents);
+        events.addAll(pageChangeEvents);
+        events.addAll(resizeEvents);
+
+        // Trier la liste d'événements par date décroissante
+        events.sort(Comparator.comparing(EventI::getClientTime, LocalDateTime::compareTo).reversed());
+
+        // Paginer la liste d'événements
+        int start = (int)pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), events.size());
+        List<EventI> pagedEvents = events.subList(start, end);
+
+        EventResponseDTO response = new EventResponseDTO("latest", pagedEvents, pageable);
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }

@@ -8,14 +8,14 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Repository
 public interface EventPageChangeRepository extends MongoRepository<EventPageChange, String> {
     Page<EventPageChange> findAllByUserId(String userId, Pageable pageable);
     Page<EventPageChange> findAllBySite(Site site, Pageable pageable);
-    int  countByUserId(String userId);
+    Page<EventPageChange> findAllByUserIdOrderByClientTimeDesc(String userId, Pageable pageable);
 
+    int  countByUserId(String userId);
     int countByUserIdAndClientTimeBetween(String userId, LocalDateTime start, LocalDateTime end);
     int countBySiteId(String siteId);
 }

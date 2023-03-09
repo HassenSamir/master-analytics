@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class EventClick implements Event{
+public class EventClick implements EventI {
     @Id
     private String id;
     private String userId;
@@ -21,18 +21,18 @@ public class EventClick implements Event{
     private String cssSelector;
     private String innerText;
     private String clientUserAgent;
-    private String clientIpAddress;
+    private String ipAddress;
     private LocalDateTime serverTime;
     @DBRef
     private Site site;
 
-    public EventClick(String userId, LocalDateTime clientTime, String cssSelector, String innerText, String clientUserAgent, String clientIpAddress, LocalDateTime serverTime, Site site) {
+    public EventClick(String userId, LocalDateTime clientTime, String cssSelector, String innerText, String clientUserAgent, String ipAddress, LocalDateTime serverTime, Site site) {
         this.userId = userId;
         this.clientTime = clientTime;
         this.cssSelector = cssSelector;
         this.innerText = innerText;
         this.clientUserAgent = clientUserAgent;
-        this.clientIpAddress = clientIpAddress;
+        this.ipAddress = ipAddress;
         this.serverTime = serverTime;
         this.site = site;
     }

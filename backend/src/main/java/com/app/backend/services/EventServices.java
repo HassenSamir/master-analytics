@@ -5,7 +5,7 @@ import com.app.backend.dto.EventPageChangeDTO;
 import com.app.backend.dto.EventResizeDTO;
 import com.app.backend.handler.ErrorResponse;
 import com.app.backend.models.*;
-import com.app.backend.payload.response.EventResponse;
+import com.app.backend.payload.response.EventTypeResponse;
 import com.app.backend.repository.*;
 import com.app.backend.security.services.UserDetailsImpl;
 import com.app.backend.utils.Utils;
@@ -76,8 +76,8 @@ public class EventServices {
                     .body(new ErrorResponse(HttpStatus.UNAUTHORIZED.value(), "Unauthorized", "You are not authorized to access this resource"));
         }
 
-        EventData data = new EventData();
-        EventResponse response;
+        EventTypeData data = new EventTypeData();
+        EventTypeResponse response;
         Pageable pageable = PageRequest.of(page, size);
 
         if (type.isEmpty()){
@@ -90,22 +90,22 @@ public class EventServices {
             data.setClickEvents(clickEventsPage.getContent());
             data.setPageChangeEvents(pageChangeEventsPage.getContent());
             data.setResizeEvents(resizeEventsPage.getContent());
-            response = new EventResponse("all", data, clickEventsPage.getPageable());
+            response = new EventTypeResponse("all", data, clickEventsPage.getPageable());
         } else if (type.equalsIgnoreCase("click")) {
             Page<EventClick> clickEventsPage = eventClickRepository.findAllByUserId(userId, pageable);
             // Ajouter les événements récupérés aux données de réponse
             data.setClickEvents(clickEventsPage.getContent());
-            response = new EventResponse(type, data, clickEventsPage.getPageable());
+            response = new EventTypeResponse(type, data, clickEventsPage.getPageable());
         } else if (type.equalsIgnoreCase("page_change")) {
             Page<EventPageChange> pageChangeEventsPage = eventPageChangeRepository.findAllByUserId(userId, pageable);
             // Ajouter les événements récupérés aux données de réponse
             data.setPageChangeEvents(pageChangeEventsPage.getContent());
-            response = new EventResponse(type, data, pageChangeEventsPage.getPageable());
+            response = new EventTypeResponse(type, data, pageChangeEventsPage.getPageable());
         } else if (type.equalsIgnoreCase("resize")) {
             Page<EventResize> resizeEventsPage = eventResizeRepository.findAllByUserId(userId, pageable);
             // Ajouter les événements récupérés aux données de réponse
             data.setResizeEvents(resizeEventsPage.getContent());
-            response = new EventResponse(type, data,resizeEventsPage.getPageable());
+            response = new EventTypeResponse(type, data,resizeEventsPage.getPageable());
         } else {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
@@ -132,8 +132,8 @@ public class EventServices {
         }
         Site site = siteOptional.get();
 
-        EventData data = new EventData();
-        EventResponse response;
+        EventTypeData data = new EventTypeData();
+        EventTypeResponse response;
         Pageable pageable = PageRequest.of(page, size);
 
         if (type.isEmpty()){
@@ -145,19 +145,19 @@ public class EventServices {
             data.setClickEvents(clickEventsPage.getContent());
             data.setPageChangeEvents(pageChangeEventsPage.getContent());
             data.setResizeEvents(resizeEventsPage.getContent());
-            response = new EventResponse("all", data, clickEventsPage.getPageable());
+            response = new EventTypeResponse("all", data, clickEventsPage.getPageable());
         } else if (type.equalsIgnoreCase("click")) {
             Page<EventClick> clickEventsPage = eventClickRepository.findAllBySite(site, pageable);
             data.setClickEvents(clickEventsPage.getContent());
-            response = new EventResponse(type, data, clickEventsPage.getPageable());
+            response = new EventTypeResponse(type, data, clickEventsPage.getPageable());
         } else if (type.equalsIgnoreCase("page_change")) {
             Page<EventPageChange> pageChangeEventsPage = eventPageChangeRepository.findAllBySite(site, pageable);
             data.setPageChangeEvents(pageChangeEventsPage.getContent());
-            response = new EventResponse(type, data, pageChangeEventsPage.getPageable());
+            response = new EventTypeResponse(type, data, pageChangeEventsPage.getPageable());
         } else if (type.equalsIgnoreCase("resize")) {
             Page<EventResize> resizeEventsPage = eventResizeRepository.findAllBySite(site, pageable);
             data.setResizeEvents(resizeEventsPage.getContent());
-            response = new EventResponse(type, data, resizeEventsPage.getPageable());
+            response = new EventTypeResponse(type, data, resizeEventsPage.getPageable());
         } else {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
