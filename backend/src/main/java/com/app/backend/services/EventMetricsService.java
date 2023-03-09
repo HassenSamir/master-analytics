@@ -8,6 +8,7 @@ import com.app.backend.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -237,24 +238,44 @@ public class EventMetricsService {
                     .body(new ErrorResponse(HttpStatus.UNAUTHORIZED.value(), "Unauthorized", "You are not authorized to access this resource"));
         }
 
+        // Vérifier que la taille de la page ne dépasse pas 50 événements
+        if (size > 50) {
+            size = 50;
+        }
         Pageable pageable = PageRequest.of(page, size);
 
-        List<EventClick> clickEvents = eventClickRepository.findAllByUserIdOrderByClientTimeDesc(userId, pageable).getContent();
-        List<EventPageChange> pageChangeEvents = eventPageChangeRepository.findAllByUserIdOrderByClientTimeDesc(userId, pageable).getContent();
-        List<EventResize> resizeEvents = eventResizeRepository.findAllByUserIdOrderByClientTimeDesc(userId, pageable).getContent();
+        Page<EventClick> clickEvents = eventClickRepository.findAllByUserIdOrderByClientTimeDesc(userId, pageable);
+        Page<EventPageChange> pageChangeEvents = eventPageChangeRepository.findAllByUserIdOrderByClientTimeDesc(userId, pageable);
+        Page<EventResize> resizeEvents = eventResizeRepository.findAllByUserIdOrderByClientTimeDesc(userId, pageable);
+
+        logger.info("clickEvents {}", clickEvents.stream().count());
+        logger.info("pageChangeEvents {}", pageChangeEvents.stream().count());
+        logger.info("resizeEvents {}", resizeEvents.stream().count());
 
         // Concaténer les listes d'événements de tous les types
         List<EventI> events = new ArrayList<>();
-        events.addAll(clickEvents);
-        events.addAll(pageChangeEvents);
-        events.addAll(resizeEvents);
 
-        // Trier la liste d'événements par date décroissante
+        if (!clickEvents.isEmpty()) {
+            events.addAll(clickEvents.getContent());
+        }
+        if (!pageChangeEvents.isEmpty()) {
+            events.addAll(pageChangeEvents.getContent());
+        }
+        if (!resizeEvents.isEmpty()) {
+            events.addAll(resizeEvents.getContent());
+        }
+
+        /// Trier la liste d'événements par date décroissante
         events.sort(Comparator.comparing(EventI::getClientTime, LocalDateTime::compareTo).reversed());
 
+
+        logger.info("events size {}", events.size());
         // Paginer la liste d'événements
-        int start = (int)pageable.getOffset();
-        int end = Math.min((start + pageable.getPageSize()), events.size());
+        int start = 0;
+        int end = start + events.size();
+        logger.info("events start {}", start);
+        logger.info("events end {}", end);
+
         List<EventI> pagedEvents = events.subList(start, end);
 
         EventResponseDTO response = new EventResponseDTO("latest", pagedEvents, pageable);
