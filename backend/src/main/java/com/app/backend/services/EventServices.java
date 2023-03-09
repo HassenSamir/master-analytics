@@ -23,9 +23,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -206,8 +204,8 @@ public class EventServices {
                 clickEventDTO.getClientTime(),
                 clickEventDTO.getCssSelector(),
                 clickEventDTO.getInnerText(),
-                request.getRemoteAddr(),
                 request.getHeader("User-Agent"),
+                request.getRemoteAddr(),
                 LocalDateTime.now(),
                 site
         );
@@ -244,8 +242,8 @@ public class EventServices {
                 pageChangeEventDTO.getOldPage(),
                 pageChangeEventDTO.getNewPage(),
                 pageChangeEventDTO.getClientTime(),
-                request.getRemoteAddr(),
                 request.getHeader("User-Agent"),
+                request.getRemoteAddr(),
                 LocalDateTime.now(),
                 site
         );
@@ -282,8 +280,8 @@ public class EventServices {
                 eventResizeDTO.getScreenWidth(),
                 eventResizeDTO.getScreenHeight(),
                 eventResizeDTO.getClientTime(),
-                request.getRemoteAddr(),
                 request.getHeader("User-Agent"),
+                request.getRemoteAddr(),
                 LocalDateTime.now(),
                 site
         );
