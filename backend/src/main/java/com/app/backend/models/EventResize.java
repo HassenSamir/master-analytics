@@ -22,18 +22,18 @@ public class EventResize implements Event{
     private int screenWidth;
     private int screenHeight;
     private LocalDateTime clientTime;
-    private String userAgent;
+    private String clientUserAgent;
     private String ipAddress;
     private LocalDateTime serverTime;
     @DBRef
     private Site site;
 
-    public EventResize(String userId, int screenWidth, int screenHeight, LocalDateTime clientTime, String userAgent, String ipAddress, LocalDateTime serverTime,Site site) {
+    public EventResize(String userId, int screenWidth, int screenHeight, LocalDateTime clientTime, String clientUserAgent, String ipAddress, LocalDateTime serverTime,Site site) {
         this.userId = userId;
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
         this.clientTime = clientTime;
-        this.userAgent = userAgent;
+        this.clientUserAgent = clientUserAgent;
         this.ipAddress = ipAddress;
         this.serverTime = serverTime;
         this.site = site;

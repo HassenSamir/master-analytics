@@ -22,18 +22,18 @@ public class EventPageChange implements Event{
     private String oldPage;
     private String newPage;
     private LocalDateTime clientTime;
-    private String userAgent;
+    private String clientUserAgent;
     private String ipAddress;
     private LocalDateTime serverTime;
     @DBRef
     private Site site;
 
-    public EventPageChange(String userId, String oldPage, String newPage, LocalDateTime clientTime, String userAgent, String ipAddress, LocalDateTime serverTime,Site site) {
+    public EventPageChange(String userId, String oldPage, String newPage, LocalDateTime clientTime, String clientUserAgent, String ipAddress, LocalDateTime serverTime,Site site) {
         this.userId = userId;
         this.oldPage = oldPage;
         this.newPage = newPage;
         this.clientTime = clientTime;
-        this.userAgent = userAgent;
+        this.clientUserAgent = clientUserAgent;
         this.ipAddress = ipAddress;
         this.serverTime = serverTime;
         this.site = site;

@@ -20,22 +20,20 @@ public class EventClick implements Event{
     private LocalDateTime clientTime;
     private String cssSelector;
     private String innerText;
-    private String clientIpAddress;
     private String clientUserAgent;
+    private String clientIpAddress;
     private LocalDateTime serverTime;
     @DBRef
     private Site site;
 
-    public EventClick(String userId, LocalDateTime clientTime, String cssSelector, String innerText, String clientIpAddress, String clientUserAgent, LocalDateTime serverTime, Site site) {
+    public EventClick(String userId, LocalDateTime clientTime, String cssSelector, String innerText, String clientUserAgent, String clientIpAddress, LocalDateTime serverTime, Site site) {
         this.userId = userId;
         this.clientTime = clientTime;
         this.cssSelector = cssSelector;
         this.innerText = innerText;
-        this.clientIpAddress = clientIpAddress;
         this.clientUserAgent = clientUserAgent;
+        this.clientIpAddress = clientIpAddress;
         this.serverTime = serverTime;
         this.site = site;
     }
-
-
 }
