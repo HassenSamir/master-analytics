@@ -20,6 +20,7 @@ import java.time.*;
 import java.time.format.TextStyle;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class EventMetricsService {
@@ -224,7 +225,8 @@ public class EventMetricsService {
         return ResponseEntity.status(HttpStatus.OK).body(eventMetrics);
     }
 
-    public ResponseEntity<?> getLastEventsMetricsByUserId(String userId, int page, int size) {
+
+    public ResponseEntity<?> getLastEventsMetricsByTypeAndUserId(String userId, String type, int page, int size) {
         // Vérifier si l'utilisateur existe
         ResponseEntity<?> isUserOnDb = Utils.checkIfUserExistById(userRepository, userId);
         if (isUserOnDb != null) {
@@ -238,57 +240,71 @@ public class EventMetricsService {
                     .body(new ErrorResponse(HttpStatus.UNAUTHORIZED.value(), "Unauthorized", "You are not authorized to access this resource"));
         }
 
+        // Vérifier que le type d'événement est valide
+        if (!Arrays.asList("click", "page_change", "resize").contains(type)) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Bad Request", "Invalid type parameter"));
+        }
+
         // Vérifier que la taille de la page ne dépasse pas 50 événements
         if (size > 50) {
             size = 50;
         }
         Pageable pageable = PageRequest.of(page, size);
 
-        Page<EventClick> clickEvents = eventClickRepository.findAllByUserIdOrderByClientTimeDesc(userId, pageable);
-        Page<EventPageChange> pageChangeEvents = eventPageChangeRepository.findAllByUserIdOrderByClientTimeDesc(userId, pageable);
-        Page<EventResize> resizeEvents = eventResizeRepository.findAllByUserIdOrderByClientTimeDesc(userId, pageable);
+        Page<? extends EventI> events;
 
-        logger.info("clickEvents {}", clickEvents.stream().count());
-        logger.info("pageChangeEvents {}", pageChangeEvents.stream().count());
-        logger.info("resizeEvents {}", resizeEvents.stream().count());
+        int totalElements;
+        // Sélectionner le type d'événement correspondant au paramètre type
+        switch (type) {
+            case "click" -> {
+                events = eventClickRepository.findAllByUserIdOrderByClientTimeDesc(userId, pageable);
+                totalElements = eventClickRepository.countByUserId(userId);
+            }
+            case "page_change" -> {
+                events = eventPageChangeRepository.findAllByUserIdOrderByClientTimeDesc(userId, pageable);
+                totalElements = eventPageChangeRepository.countByUserId(userId);
+            }
+            case "resize" -> {
+                events = eventResizeRepository.findAllByUserIdOrderByClientTimeDesc(userId, pageable);
+                totalElements = eventResizeRepository.countByUserId(userId);
 
-        // Calculer le nombre total d'événements disponibles pour chaque type d'événement
-        long totalClickEvents = clickEvents.getTotalElements();
-        long totalPageChangeEvents = pageChangeEvents.getTotalElements();
-        long totalResizeEvents = resizeEvents.getTotalElements();
+            }
+            default -> {
+                return ResponseEntity
+                        .status(HttpStatus.BAD_REQUEST)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Bad Request", "Invalid type parameter"));
+            }
+        }
+
 
         // Calculer le nombre maximal d'événements que l'on peut afficher sur la page en fonction du nombre d'événements disponibles pour chaque type
-        int maxEventsPerPage = Math.min(size, (int) (totalClickEvents + totalPageChangeEvents + totalResizeEvents - pageable.getOffset()));
-
-        // Concaténer les listes d'événements de tous les types
-        List<EventI> events = new ArrayList<>();
-
-        if (!clickEvents.isEmpty()) {
-            events.addAll(clickEvents.getContent());
-        }
-        if (!pageChangeEvents.isEmpty()) {
-            events.addAll(pageChangeEvents.getContent());
-        }
-        if (!resizeEvents.isEmpty()) {
-            events.addAll(resizeEvents.getContent());
-        }
-
-        /// Trier la liste d'événements par date décroissante
-        events.sort(Comparator.comparing(EventI::getClientTime, LocalDateTime::compareTo).reversed());
+        int maxEventsPerPage = Math.min(size, (int) (events.getTotalElements() - pageable.getOffset()));
 
 
-        logger.info("events size {}", events.size());
+        // Trier la liste d'événements par date décroissante
+        List<EventI> sortedEvents = events.getContent()
+                .stream()
+                .sorted(Comparator.comparing(EventI::getClientTime, LocalDateTime::compareTo).reversed())
+                .collect(Collectors.toList());
+
+        logger.info("events size {}", sortedEvents.size());
         // Paginer la liste d'événements
         int start = (int)pageable.getOffset();
-        int end = Math.min((start + maxEventsPerPage), events.size());
+        int end = Math.min((start + maxEventsPerPage), sortedEvents.size());
         logger.info("events start {}", start);
         logger.info("events end {}", end);
 
-        List<EventI> pagedEvents = events.subList(0, end);
+        List<EventI> pagedEvents = sortedEvents.subList(0, end);
         logger.info("pagedEvents {}", pagedEvents.size());
+        int totalPages = (int) Math.ceil((double) totalElements / size);
 
-        EventResponseDTO response = new EventResponseDTO("latest", pagedEvents, pageable);
+        EventResponseDTO response = new EventResponseDTO("latest", pagedEvents, pageable,totalElements,totalPages);
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+
 }

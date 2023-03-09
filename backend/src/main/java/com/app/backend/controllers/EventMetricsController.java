@@ -41,9 +41,10 @@ public class EventMetricsController {
     @PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
     public ResponseEntity<?> getLastEventsMetricsByUserId(
             @PathVariable String userId,
+            @RequestParam(name = "type", required = true) String type,
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "10") int size) {
-        return eventMetricsService.getLastEventsMetricsByUserId(userId, page, size);
+        return eventMetricsService.getLastEventsMetricsByTypeAndUserId(userId, type, page, size);
     }
 
 }

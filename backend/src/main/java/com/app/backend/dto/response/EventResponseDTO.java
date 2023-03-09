@@ -15,4 +15,7 @@ public class EventResponseDTO {
     private String type;
     private List<EventI> data;
     private Pageable pageable;
+
+    private long totalElements;
+    private long totalPages;
 }
