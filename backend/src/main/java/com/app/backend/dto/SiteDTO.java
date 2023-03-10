@@ -22,6 +22,5 @@ public class SiteDTO {
     @NotBlank
     private String description;
 
-    private LocalDateTime clientTime;
 
 }

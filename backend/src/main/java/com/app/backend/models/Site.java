@@ -27,8 +27,6 @@ public class Site {
     @NotBlank
     private String description;
 
-    private LocalDateTime clientTime;
-
     @NotBlank
     private String apiKey;
 
@@ -38,11 +36,10 @@ public class Site {
     @NotBlank
     private String userId;
 
-    public Site(String name, String url, String description, LocalDateTime clientTime, String apiKey, Date creationDate, String userId) {
+    public Site(String name, String url, String description, String apiKey, Date creationDate, String userId) {
         this.name = name;
         this.url = url;
         this.description = description;
-        this.clientTime = clientTime;
         this.apiKey = apiKey;
         this.creationDate = creationDate;
         this.userId = userId;

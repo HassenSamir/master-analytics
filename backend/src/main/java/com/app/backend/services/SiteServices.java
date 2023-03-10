@@ -56,7 +56,6 @@ public class SiteServices {
         site.setName(siteDto.getName());
         site.setUrl(siteDto.getUrl());
         site.setDescription(siteDto.getDescription());
-        site.setClientTime(LocalDateTime.now());
 
         String apiKey = ApiKeyGenerator.generateApiKey();
         site.setApiKey(apiKey);
