@@ -2,7 +2,7 @@ import './App.css';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Admin, Dashboard, Home, SignIn, NotFound, SignUp, UnAuthorized } from './pages';
 import React, { useEffect } from 'react';
-import analyticsScript from './scripts/analyticsScript.js';
+//import analyticsScript from './scripts/analyticsScript.js';
 import PropTypes from 'prop-types';
 import { AuthContext } from './contexts/AuthProvider';
 import { ROLE } from './utils/utils';
@@ -25,7 +25,7 @@ const ProtectedRoute = ({ user, roles, children }) => {
 function App() {
   const { user } = React.useContext(AuthContext);
 
-  useEffect(() => {
+  /*useEffect(() => {
     const script = document.createElement('script');
     script.src = analyticsScript;
     script.async = true;
@@ -34,7 +34,7 @@ function App() {
     return () => {
       document.body.removeChild(script);
     };
-  }, []);
+  }, []);*/
 
   useEffect(() => {
     console.log('USER1', user);

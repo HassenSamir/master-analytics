@@ -1,0 +1,6 @@
+.site-management-container {
+  display: flex;
+  flex-direction: column;
+  background-color: pink;
+  margin-top: 25px;
+}
