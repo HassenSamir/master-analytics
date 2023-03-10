@@ -1,6 +1,6 @@
 import './App.css';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { Admin, Dashboard, Home, Login, NotFound, SignUp, UnAuthorized } from './pages';
+import { Admin, Dashboard, Home, SignIn, NotFound, SignUp, UnAuthorized } from './pages';
 import React, { useEffect } from 'react';
 import analyticsScript from './scripts/analyticsScript.js';
 import PropTypes from 'prop-types';
@@ -43,7 +43,7 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
-      <Route path="/login" element={<Login />} />
+      <Route path="/signin" element={<SignIn />} />
       <Route path="/signup" element={<SignUp />} />
       <Route
         path="/dashboard"

@@ -23,14 +23,14 @@ const NotLoggedNavBar = () => {
         </Link>
       </Stack>
       <Stack direection="row" className="navbar-btn-container">
-        <Link to="/login">
-          <Button className="navbar-btn" variant="outlined">
-            LogIn
-          </Button>
-        </Link>
         <Link to="/signin">
           <Button className="navbar-btn" variant="outlined">
-            SignIn
+            Sign In
+          </Button>
+        </Link>
+        <Link to="/signup">
+          <Button className="navbar-btn" variant="outlined">
+            Sign Up
           </Button>
         </Link>
       </Stack>
