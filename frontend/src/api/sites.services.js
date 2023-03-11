@@ -18,11 +18,11 @@ export const deleteSiteById = (siteId) => {
   return authInterceptor.delete(`/sites/${siteId}`).then((response) => response.data);
 };
 
-export const updateSitesById = (userId, name, description) => {
+export const updateSiteById = (siteId, name, url) => {
   return authInterceptor
-    .put(`/sites/${userId}`, {
+    .put(`/sites/${siteId}`, {
       name,
-      description
+      url
     })
     .then((response) => response.data);
 };
