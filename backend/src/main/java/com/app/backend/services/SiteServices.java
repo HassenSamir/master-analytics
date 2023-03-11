@@ -7,6 +7,7 @@ import com.app.backend.models.User;
 import com.app.backend.repository.SiteRepository;
 import com.app.backend.repository.UserRepository;
 import com.app.backend.security.config.ApiKeyGenerator;
+import com.app.backend.security.services.UserDetailsImpl;
 import com.app.backend.utils.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -89,32 +90,43 @@ public class SiteServices {
 
         return ResponseEntity.status(HttpStatus.CREATED).body(savedSite);
     }
-    public void deleteSite(String id) throws Exception {
+    public ResponseEntity<?> deleteSite(String id)  {
         // Vérifier si l'ID du site est présent
         if (id == null || id.isEmpty()) {
-            throw new IllegalArgumentException("Site ID is required");
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Bad Request", "Site ID is required"));
         }
 
         // Vérifier si le site existe
         Optional<Site> optionalSite = siteRepository.findById(id);
         if (optionalSite.isEmpty()) {
-            throw new RuntimeException("Site not found with ID: " + id);
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new ErrorResponse(HttpStatus.NOT_FOUND.value(), "Not Found", "Site not found with ID: " + id));
         }
-
         Site site = optionalSite.get();
 
         // Vérification si l'utilisateur connecté est propriétaire du site
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         boolean isAdmin = authentication.getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-        String loggedInUserId = authentication.getName();
+        // Extract user id from token
+        String userId = ((UserDetailsImpl) authentication.getPrincipal()).getId();
 
-        if (!site.getUserId().equals(loggedInUserId) && !isAdmin) {
-            throw new AccessDeniedException("You are not authorized to delete this site");
+        if (!site.getUserId().equals(userId) && !isAdmin) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new ErrorResponse(HttpStatus.UNAUTHORIZED.value(), "Unauthorized", "You are not authorized to delete this site"));
         }
 
         // Supprimer le site
         siteRepository.deleteById(id);
+
+        return ResponseEntity.status(HttpStatus.OK).body(site);
     }
 
     public ResponseEntity<?> getSitesByUserId(String userId) throws Exception {

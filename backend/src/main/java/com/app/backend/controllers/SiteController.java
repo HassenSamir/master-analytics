@@ -38,7 +38,7 @@ public class SiteController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
-    public void deleteSite(@PathVariable String id) throws Exception {
-        siteServices.deleteSite(id);
+    public ResponseEntity<?> deleteSite(@PathVariable String id)  {
+        return siteServices.deleteSite(id);
     }
 }
