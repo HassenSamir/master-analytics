@@ -7,7 +7,7 @@ import { AuthContext } from '../../contexts/AuthProvider';
 import LoadingText from '../LoadingText/LoadingText';
 
 const UserMenuInfo = () => {
-  const { user } = React.useContext(AuthContext);
+  const { user, logout } = React.useContext(AuthContext);
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
   const handleClick = (event) => {
@@ -15,6 +15,10 @@ const UserMenuInfo = () => {
   };
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const handleLogout = () => {
+    logout();
   };
 
   useEffect(() => {
@@ -43,9 +47,7 @@ const UserMenuInfo = () => {
         open={open}
         onClose={handleClose}
         TransitionComponent={Fade}>
-        <MenuItem onClick={handleClose}>Profile</MenuItem>
-        <MenuItem onClick={handleClose}>My account</MenuItem>
-        <MenuItem onClick={handleClose}>Logout</MenuItem>
+        <MenuItem onClick={handleLogout}>Logout</MenuItem>
       </Menu>
     </div>
   );

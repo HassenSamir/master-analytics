@@ -1,14 +1,12 @@
 import './App.css';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Admin, Dashboard, Home, SignIn, NotFound, SignUp, UnAuthorized } from './pages';
-import React, { useEffect } from 'react';
-//import analyticsScript from './scripts/analyticsScript.js';
 import PropTypes from 'prop-types';
 import { AuthContext } from './contexts/AuthProvider';
 import { ROLE } from './utils/utils';
+import { useContext } from 'react';
 
 const hasRole = (user, roles) => {
-  console.log('user', user);
   return roles.some((role) => user.roles.includes(role));
 };
 
@@ -16,33 +14,18 @@ const ProtectedRoute = ({ user, roles, children }) => {
   const userFromStorage = localStorage.getItem('master-analytics-user');
 
   if (!userFromStorage && (!user || !hasRole(user, roles))) {
-    return <Navigate to="/unauthorized" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return children;
 };
 
 function App() {
-  const { user } = React.useContext(AuthContext);
-
-  /*useEffect(() => {
-    const script = document.createElement('script');
-    script.src = analyticsScript;
-    script.async = true;
-    document.body.appendChild(script);
-
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);*/
-
-  useEffect(() => {
-    console.log('USER1', user);
-  }, [user]);
+  const { user } = useContext(AuthContext);
 
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
+      <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <Home />} />
       <Route path="/signin" element={<SignIn />} />
       <Route path="/signup" element={<SignUp />} />
       <Route
