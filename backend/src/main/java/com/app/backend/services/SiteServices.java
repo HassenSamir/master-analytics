@@ -202,7 +202,7 @@ public class SiteServices {
         }
 
         HttpStatus urlStatus = isValidUrl(updatedSite.getUrl());
-        if (urlStatus != HttpStatus.OK) {
+        if (!updatedSite.getUrl().isBlank() && urlStatus != HttpStatus.OK) {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .contentType(MediaType.APPLICATION_JSON)
