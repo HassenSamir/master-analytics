@@ -19,7 +19,7 @@ import {
 import { useState } from 'react';
 import './SiteManagement.css';
 import { AuthContext } from '../../../../../contexts/AuthProvider';
-import { createSite, getSitesByUserId } from '../../../../../api/sites.services';
+import { createSite, deleteSiteById, getSitesByUserId } from '../../../../../api/sites.services';
 import { CopyBlock, dracula } from 'react-code-blocks';
 import analyticsScript from 'raw-loader!../../../../../scripts/analyticsScript.js';
 import EditIcon from '@mui/icons-material/Edit';
@@ -62,7 +62,8 @@ const styles = {
   }
 };
 
-const SiteTable = ({ sites }) => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const SiteTable = ({ sites, setDeleteSiteId }) => {
   const header = ['ID', 'name', 'url', 'API KEY', 'creation date', 'Actions'];
   const [data, setData] = useState([]);
 
@@ -79,7 +80,7 @@ const SiteTable = ({ sites }) => {
             <IconButton onClick={() => console.log('edit')}>
               <EditIcon />
             </IconButton>
-            <IconButton onClick={() => console.log('delete')}>
+            <IconButton onClick={() => setDeleteSiteId(site.id)}>
               <DeleteIcon />
             </IconButton>
           </Stack>
@@ -208,15 +209,17 @@ SiteForm.displayName = 'SiteForm';
 const SiteManagement = () => {
   const [open, setOpen] = useState(false);
   const [alertCreatedSite, setAlertCreatedSite] = useState(false);
+  const [alertDeletedSite, setAlertDeletedSite] = useState(false);
   const [sites, setSites] = useState([]);
-  const [script, setScript] = useState([]);
   const { user } = useContext(AuthContext);
+  const [deleteSiteId, setDeleteSiteId] = useState('');
 
   const handleOpen = () => {
     setOpen(true);
   };
   const handleClose = () => {
     setOpen(false);
+    setDeleteSiteId('');
   };
 
   const fetchSite = async () => {
@@ -226,27 +229,31 @@ const SiteManagement = () => {
     setSites(resp);
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const deleteSite = async () => {
+    await deleteSiteById(deleteSiteId)
+      .then((resp) => {
+        console.log(resp);
+        setAlertDeletedSite(true);
+        setTimeout(() => {
+          setAlertDeletedSite(false);
+        }, 3000);
+        setDeleteSiteId('');
+      })
+      .catch((err) => console.log(err));
+  };
   useEffect(() => {
     fetchSite();
-    const scriptElement = document.createElement('script');
-    scriptElement.src = analyticsScript;
-    setScript(scriptElement);
   }, []);
   useEffect(() => {
-    console.log(alertCreatedSite);
-    if (alertCreatedSite) {
+    if (alertCreatedSite || alertDeletedSite) {
       fetchSite();
     }
-    fetch('src/scripts/analyticsScript.js')
-      .then((response) => response.text())
-      .then((data) => {
-        console.log(data);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-  }, [alertCreatedSite]);
+  }, [alertCreatedSite, alertDeletedSite]);
 
+  useEffect(() => {
+    console.log(deleteSiteId);
+  }, [deleteSiteId]);
   return (
     <Box className="site-management-container">
       <Stack direction="row" justifyContent="space-between" alignItems="flex-end">
@@ -269,9 +276,27 @@ const SiteManagement = () => {
             />
           </Modal>
         )}
+        {deleteSiteId && (
+          <Modal
+            open={deleteSiteId.length > 0}
+            onClose={handleClose}
+            aria-labelledby="modal-modal-title"
+            aria-describedby="modal-modal-description">
+            <Box component="form" sx={style}>
+              <Typography>Are you sur you want to delete the site ?</Typography>
+              <Stack direction="row" gap="10px" justifyContent="flex-end">
+                <Button onClick={() => setDeleteSiteId('')}>Cancel</Button>
+                <Button onClick={deleteSite}>Confirm</Button>
+              </Stack>
+            </Box>
+          </Modal>
+        )}
       </Stack>
       {alertCreatedSite && <Alert severity="success">Success in creating the site</Alert>}
-      <Paper elevation={3}>{sites?.length > 0 && <SiteTable sites={sites} />}</Paper>
+      {alertDeletedSite && <Alert severity="warning">Deleting the site</Alert>}
+      <Paper elevation={3}>
+        {sites?.length > 0 && <SiteTable sites={sites} setDeleteSiteId={setDeleteSiteId} />}
+      </Paper>
       <Stack mt={4}>
         <Typography variant="h5" fontWeight="bold">
           Script Code
@@ -280,16 +305,14 @@ const SiteManagement = () => {
           Copy this script and implement it on your website with the correct API_KEY to receive
           metrics on your dasboard
         </Typography>
-        {script && (
-          <CopyBlock
-            language="js"
-            text={analyticsScript}
-            showLineNumbers={true}
-            theme={dracula}
-            wrapLines={true}
-            codeBlock
-          />
-        )}
+        <CopyBlock
+          language="js"
+          text={analyticsScript}
+          showLineNumbers={true}
+          theme={dracula}
+          wrapLines={true}
+          codeBlock
+        />
       </Stack>
     </Box>
   );

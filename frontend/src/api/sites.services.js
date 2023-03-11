@@ -13,3 +13,16 @@ export const createSite = (userId, name, description, url) => {
     })
     .then((response) => response.data);
 };
+
+export const deleteSiteById = (siteId) => {
+  return authInterceptor.delete(`/sites/${siteId}`).then((response) => response.data);
+};
+
+export const updateSitesById = (userId, name, description) => {
+  return authInterceptor
+    .put(`/sites/${userId}`, {
+      name,
+      description
+    })
+    .then((response) => response.data);
+};
