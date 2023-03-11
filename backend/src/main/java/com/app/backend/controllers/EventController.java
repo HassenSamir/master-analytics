@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
+import java.util.List;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -73,18 +74,18 @@ public class EventController {
 
     //Get All Events for one site
     @PostMapping("/click/{apiKey}")
-    public ResponseEntity<?> createClickEvent(@Valid @RequestBody EventClickDTO clickEventDTO, @PathVariable String apiKey, HttpServletRequest request) throws IOException {
-        return eventService.createClickEvent(clickEventDTO, request, apiKey);
+    public ResponseEntity<?> createClickEvent(@Valid @RequestBody List<EventClickDTO> clickEventDTO, @PathVariable String apiKey, HttpServletRequest request) throws IOException {
+        return eventService.createClickEvents(clickEventDTO, request, apiKey);
     }
 
     @PostMapping("/page_change/{apiKey}")
-    public ResponseEntity<?>  createPageChangeEvent(@Valid @RequestBody EventPageChangeDTO pageChangeEventDTO, @PathVariable String apiKey, HttpServletRequest request) throws IOException {
-        return eventService.createPageChangeEvent(pageChangeEventDTO, request, apiKey);
+    public ResponseEntity<?>  createPageChangeEvent(@Valid @RequestBody List<EventPageChangeDTO> pageChangeEventDTO, @PathVariable String apiKey, HttpServletRequest request) throws IOException {
+        return eventService.createPageChangeEvents(pageChangeEventDTO, request, apiKey);
     }
 
     @PostMapping("/resize/{apiKey}")
-    public ResponseEntity<?> createResizeEvent(@Valid @RequestBody EventResizeDTO resizeEventDTO, @PathVariable String apiKey, HttpServletRequest request) throws IOException {
-        return eventService.createResizeEvent(resizeEventDTO, request, apiKey);
+    public ResponseEntity<?> createResizeEvent(@Valid @RequestBody List<EventResizeDTO> resizeEventDTO, @PathVariable String apiKey, HttpServletRequest request) throws IOException {
+        return eventService.createResizeEvents(resizeEventDTO, request, apiKey);
     }
 
 }

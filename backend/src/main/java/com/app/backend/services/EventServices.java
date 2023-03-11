@@ -23,6 +23,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 
@@ -169,7 +171,7 @@ public class EventServices {
     }
 
     // CREATE
-    public ResponseEntity<?> createClickEvent(EventClickDTO clickEventDTO, HttpServletRequest request, String apiKey) throws IOException {
+    public ResponseEntity<?> createClickEvents(List<EventClickDTO> clickEventsDTO, HttpServletRequest request, String apiKey) throws IOException {
         // Vérifier si l'apiKey existe dans la base de données
         // et si l'URL de la requête correspond à l'URL du site
         ResponseEntity<?> checkIfApiKeyMatchSiteInDbAndIfReqUrlIsValid = Utils.checkSiteApiKey(request, apiKey, siteRepository);
@@ -180,43 +182,53 @@ public class EventServices {
         Optional<Site> siteOptional = siteRepository.findByApiKey(apiKey);
         Site site = siteOptional.get();
 
-
-
-        // Vérifier si le sélecteur CSS est non nul et non vide
-        if (ObjectUtils.isEmpty(clickEventDTO.getCssSelector())) {
+        // Vérifier si la liste d'événements est vide ou nulle
+        if (ObjectUtils.isEmpty(clickEventsDTO)) {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Bad Request", "CSS selector is required"));
+                    .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Bad Request", "Click events list is required"));
         }
 
-        // Vérifier si le texte interne est non nul et non vide
-        if (ObjectUtils.isEmpty(clickEventDTO.getInnerText())) {
-            return ResponseEntity
-                    .status(HttpStatus.BAD_REQUEST)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Bad Request", "Inner text is required"));
+        // Créer un nouvel objet événement de clic pour chaque élément de la liste
+        List<EventClick> clickEvents = new ArrayList<>();
+        for (EventClickDTO clickEventDTO : clickEventsDTO) {
+            // Vérifier si le sélecteur CSS est non nul et non vide
+            if (ObjectUtils.isEmpty(clickEventDTO.getCssSelector())) {
+                return ResponseEntity
+                        .status(HttpStatus.BAD_REQUEST)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Bad Request", "CSS selector is required"));
+            }
+
+            // Vérifier si le texte interne est non nul et non vide
+            if (ObjectUtils.isEmpty(clickEventDTO.getInnerText())) {
+                return ResponseEntity
+                        .status(HttpStatus.BAD_REQUEST)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Bad Request", "Inner text is required"));
+            }
+
+            EventClick clickEvent = new EventClick(
+                    site.getUserId(),
+                    clickEventDTO.getClientTime(),
+                    clickEventDTO.getCssSelector(),
+                    clickEventDTO.getInnerText(),
+                    request.getHeader("User-Agent"),
+                    request.getRemoteAddr(),
+                    LocalDateTime.now(),
+                    site
+            );
+            clickEvents.add(clickEvent);
         }
 
-        // Créer un nouvel objet événement de clic
-        EventClick clickEvent = new EventClick(
-                site.getUserId(),
-                clickEventDTO.getClientTime(),
-                clickEventDTO.getCssSelector(),
-                clickEventDTO.getInnerText(),
-                request.getHeader("User-Agent"),
-                request.getRemoteAddr(),
-                LocalDateTime.now(),
-                site
-        );
+        // Enregistrer les événements de clic dans la base de données
+        eventClickRepository.saveAll(clickEvents);
 
-        // Enregistrer l'événement de clic
-        eventClickRepository.save(clickEvent);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(clickEvent);
+        return ResponseEntity.status(HttpStatus.CREATED).body(clickEvents);
     }
 
-    public ResponseEntity<?> createPageChangeEvent(EventPageChangeDTO pageChangeEventDTO, HttpServletRequest request,String apiKey) throws IOException {
+    public ResponseEntity<?> createPageChangeEvents(List<EventPageChangeDTO> pageChangeEventDTOs, HttpServletRequest request, String apiKey) throws IOException {
         // Vérifier si l'apiKey existe dans la base de données
         // et si l'URL de la requête correspond à l'URL du site
         ResponseEntity<?> checkIfApiKeyMatchSiteInDbAndIfReqUrlIsValid = Utils.checkSiteApiKey(request, apiKey, siteRepository);
@@ -227,34 +239,40 @@ public class EventServices {
         Optional<Site> siteOptional = siteRepository.findByApiKey(apiKey);
         Site site = siteOptional.get();
 
-        // Vérifier si Old page est non nul et non vide
-        if (ObjectUtils.isEmpty(pageChangeEventDTO.getOldPage())) {
-            throw new IOException("Old page is required");
+        List<EventPageChange> pageChangeEvents = new ArrayList<>();
+        for (EventPageChangeDTO pageChangeEventDTO : pageChangeEventDTOs) {
+            // Vérifier si Old page est non nul et non vide
+            if (ObjectUtils.isEmpty(pageChangeEventDTO.getOldPage())) {
+                throw new IOException("Old page is required");
+            }
+            // Vérifier si New page est non nul et non vide
+            if (ObjectUtils.isEmpty(pageChangeEventDTO.getNewPage())) {
+                throw new IOException("New page is required");
+            }
+
+            // Créer un nouvel objet événement page change
+            EventPageChange pageChangeEvent = new EventPageChange(
+                    site.getUserId(),
+                    pageChangeEventDTO.getOldPage(),
+                    pageChangeEventDTO.getNewPage(),
+                    pageChangeEventDTO.getClientTime(),
+                    request.getHeader("User-Agent"),
+                    request.getRemoteAddr(),
+                    LocalDateTime.now(),
+                    site
+            );
+
+            // Ajouter l'événement page change à la liste des événements de changement de page
+            pageChangeEvents.add(pageChangeEvent);
         }
-        // Vérifier si New page est non nul et non vide
-        if (ObjectUtils.isEmpty(pageChangeEventDTO.getNewPage())) {
-            throw new IOException("New page is required");
-        }
 
-        // Créer un nouvel objet événement page change
-        EventPageChange pageChangeEvent = new EventPageChange(
-                site.getUserId(),
-                pageChangeEventDTO.getOldPage(),
-                pageChangeEventDTO.getNewPage(),
-                pageChangeEventDTO.getClientTime(),
-                request.getHeader("User-Agent"),
-                request.getRemoteAddr(),
-                LocalDateTime.now(),
-                site
-        );
+        // Enregistrer les événements de changement de page
+        eventPageChangeRepository.saveAll(pageChangeEvents);
 
-        // Enregistrer l'événement page change
-        eventPageChangeRepository.save(pageChangeEvent);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(pageChangeEvent);
+        return ResponseEntity.status(HttpStatus.CREATED).body(pageChangeEvents);
     }
 
-    public ResponseEntity<?> createResizeEvent(EventResizeDTO eventResizeDTO, HttpServletRequest request,String apiKey) throws IOException {
+    public ResponseEntity<?> createResizeEvents(List<EventResizeDTO> eventResizeDTOs, HttpServletRequest request, String apiKey) throws IOException {
         // Vérifier si l'apiKey existe dans la base de données
         // et si l'URL de la requête correspond à l'URL du site
         ResponseEntity<?> checkIfApiKeyMatchSiteInDbAndIfReqUrlIsValid = Utils.checkSiteApiKey(request, apiKey, siteRepository);
@@ -265,32 +283,43 @@ public class EventServices {
         Optional<Site> siteOptional = siteRepository.findByApiKey(apiKey);
         Site site = siteOptional.get();
 
-        // Vérifier si Screen width est non nul et non vide
-        if (ObjectUtils.isEmpty(eventResizeDTO.getScreenWidth())) {
-            throw new IOException("Screen width is required");
-        }
-        // Vérifier si Screen height est non nul et non vide
-        if (ObjectUtils.isEmpty(eventResizeDTO.getScreenHeight())) {
-            throw new IOException("Screen height is required");
+        // Vérifier si la liste d'événements de resize n'est pas vide
+        if (eventResizeDTOs.isEmpty()) {
+            throw new IOException("No resize events to save");
         }
 
-        // Créer un nouvel objet événement resize
-        EventResize eventResize = new EventResize(
-                site.getUserId(),
-                eventResizeDTO.getScreenWidth(),
-                eventResizeDTO.getScreenHeight(),
-                eventResizeDTO.getClientTime(),
-                request.getHeader("User-Agent"),
-                request.getRemoteAddr(),
-                LocalDateTime.now(),
-                site
-        );
+        List<EventResize> eventResizes = new ArrayList<>();
 
-        // Enregistrer l'événement resize
-        eventResizeRepository.save(eventResize);
+        // Parcourir la liste d'événements de resize et les ajouter à la liste à enregistrer
+        for (EventResizeDTO eventResizeDTO : eventResizeDTOs) {
+            // Vérifier si Screen width est non nul et non vide
+            if (ObjectUtils.isEmpty(eventResizeDTO.getScreenWidth())) {
+                throw new IOException("Screen width is required");
+            }
+            // Vérifier si Screen height est non nul et non vide
+            if (ObjectUtils.isEmpty(eventResizeDTO.getScreenHeight())) {
+                throw new IOException("Screen height is required");
+            }
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(eventResize);
+            // Créer un nouvel objet événement resize
+            EventResize eventResize = new EventResize(
+                    site.getUserId(),
+                    eventResizeDTO.getScreenWidth(),
+                    eventResizeDTO.getScreenHeight(),
+                    eventResizeDTO.getClientTime(),
+                    request.getHeader("User-Agent"),
+                    request.getRemoteAddr(),
+                    LocalDateTime.now(),
+                    site
+            );
+
+            eventResizes.add(eventResize);
+        }
+
+        // Enregistrer les événements de resize
+        eventResizeRepository.saveAll(eventResizes);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(eventResizes);
     }
-
 }
 
