@@ -17,4 +17,5 @@ public interface SiteRepository extends MongoRepository<Site, String> {
 
     Optional<Site> findByIdAndUserId(String id, String userId);
 
+    long countByUserId(String userId);
 }

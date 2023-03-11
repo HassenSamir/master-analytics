@@ -50,6 +50,16 @@ public class SiteServices {
         Optional<User> optionalUser = userRepository.findById(userId);
         User user = optionalUser.get();
 
+        long siteCount = siteRepository.countByUserId(userId);
+
+        // Vérifier si l'utilisateur a déjà créé trois sites
+        if (siteCount >= 3) {
+            return ResponseEntity
+                    .status(HttpStatus.FORBIDDEN)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new ErrorResponse(HttpStatus.FORBIDDEN.value(), "Forbidden", "You have already created the maximum number of sites"));
+        }
+
         Site site = new Site();
         site.setUserId(user.getId());
         site.setName(siteDto.getName());
