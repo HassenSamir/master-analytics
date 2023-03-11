@@ -15,5 +15,5 @@ public class SiteUpdateDTO {
     private String name;
 
     @NotBlank
-    private String description;
+    private String url;
 }

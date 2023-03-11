@@ -186,7 +186,7 @@ public class SiteServices {
         }
 
         // Vérifier si au moins une propriété de SiteUpdateDTO est présente
-        if ((updatedSite.getName() == null || updatedSite.getName().isBlank()) && (updatedSite.getDescription() == null || updatedSite.getDescription().isBlank())) {
+        if ((updatedSite.getName() == null || updatedSite.getName().isBlank()) && (updatedSite.getUrl() == null || updatedSite.getUrl().isBlank())) {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .contentType(MediaType.APPLICATION_JSON)
@@ -194,19 +194,27 @@ public class SiteServices {
         }
 
         // Vérifier si l'élément modifié est différent de celui qui existe déjà
-        if (updatedSite.getName() != null && updatedSite.getName().equals(site.getName()) && updatedSite.getDescription() != null && updatedSite.getDescription().equals(site.getDescription())) {
+        if (updatedSite.getName() != null && updatedSite.getName().equals(site.getName()) && updatedSite.getUrl() != null && updatedSite.getUrl().equals(site.getUrl())) {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .contentType(MediaType.APPLICATION_JSON)
-                    .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Bad Request", "Site name and description are the same as the existing site"));
+                    .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Bad Request", "Site name and url are the same as the existing site"));
+        }
+
+        HttpStatus urlStatus = isValidUrl(updatedSite.getUrl());
+        if (urlStatus != HttpStatus.OK) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Bad Request", "Invalid URL"));
         }
 
         // Mettre à jour les informations du site
         if (updatedSite.getName() != null && !updatedSite.getName().isBlank()) {
             site.setName(updatedSite.getName());
         }
-        if (updatedSite.getDescription() != null && !updatedSite.getDescription().isBlank()) {
-            site.setDescription(updatedSite.getDescription());
+        if (updatedSite.getUrl() != null && !updatedSite.getUrl().isBlank()) {
+            site.setUrl(updatedSite.getUrl());
         }
 
         siteRepository.save(site);
