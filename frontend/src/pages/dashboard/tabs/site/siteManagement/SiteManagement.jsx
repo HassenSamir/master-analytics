@@ -4,6 +4,7 @@ import {
   Alert,
   Box,
   Button,
+  IconButton,
   Modal,
   Paper,
   Stack,
@@ -12,12 +13,17 @@ import {
   TableCell,
   TableHead,
   TableRow,
-  TextField
+  TextField,
+  Typography
 } from '@mui/material';
 import { useState } from 'react';
 import './SiteManagement.css';
 import { AuthContext } from '../../../../../contexts/AuthProvider';
 import { createSite, getSitesByUserId } from '../../../../../api/sites.services';
+import { CopyBlock, dracula } from 'react-code-blocks';
+import analyticsScript from 'raw-loader!../../../../../scripts/analyticsScript.js';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const style = {
   position: 'absolute',
@@ -57,7 +63,7 @@ const styles = {
 };
 
 const SiteTable = ({ sites }) => {
-  const header = ['ID', 'name', 'url', 'API KEY', 'creation date', 'Script', 'Actions'];
+  const header = ['ID', 'name', 'url', 'API KEY', 'creation date', 'Actions'];
   const [data, setData] = useState([]);
 
   useEffect(() => {
@@ -68,8 +74,16 @@ const SiteTable = ({ sites }) => {
         url: site.url,
         api_key: site.apiKey,
         date: site.creationDate,
-        script: <Button>Action</Button>,
-        actions: <Button>Action</Button>
+        actions: (
+          <Stack direction="row" gap="10px">
+            <IconButton onClick={() => console.log('edit')}>
+              <EditIcon />
+            </IconButton>
+            <IconButton onClick={() => console.log('delete')}>
+              <DeleteIcon />
+            </IconButton>
+          </Stack>
+        )
       };
     });
     setData(sitesFormatted);
@@ -195,6 +209,7 @@ const SiteManagement = () => {
   const [open, setOpen] = useState(false);
   const [alertCreatedSite, setAlertCreatedSite] = useState(false);
   const [sites, setSites] = useState([]);
+  const [script, setScript] = useState([]);
   const { user } = useContext(AuthContext);
 
   const handleOpen = () => {
@@ -213,18 +228,32 @@ const SiteManagement = () => {
 
   useEffect(() => {
     fetchSite();
+    const scriptElement = document.createElement('script');
+    scriptElement.src = analyticsScript;
+    setScript(scriptElement);
   }, []);
   useEffect(() => {
     console.log(alertCreatedSite);
     if (alertCreatedSite) {
       fetchSite();
     }
+    fetch('src/scripts/analyticsScript.js')
+      .then((response) => response.text())
+      .then((data) => {
+        console.log(data);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   }, [alertCreatedSite]);
 
   return (
     <Box className="site-management-container">
-      <Stack direction="row" justifyContent="flex-end" mb={1}>
-        <Button variant="contained" onClick={handleOpen}>
+      <Stack direction="row" justifyContent="space-between" alignItems="flex-end">
+        <Typography variant="body1" fontStyle="italic" fontWeight="bold">
+          5 sites Max*
+        </Typography>
+        <Button sx={{ marginBottom: '15px' }} variant="contained" onClick={handleOpen}>
           Create Site
         </Button>
         {user && (
@@ -243,6 +272,25 @@ const SiteManagement = () => {
       </Stack>
       {alertCreatedSite && <Alert severity="success">Success in creating the site</Alert>}
       <Paper elevation={3}>{sites?.length > 0 && <SiteTable sites={sites} />}</Paper>
+      <Stack mt={4}>
+        <Typography variant="h5" fontWeight="bold">
+          Script Code
+        </Typography>
+        <Typography variant="body1" mb={2}>
+          Copy this script and implement it on your website with the correct API_KEY to receive
+          metrics on your dasboard
+        </Typography>
+        {script && (
+          <CopyBlock
+            language="js"
+            text={analyticsScript}
+            showLineNumbers={true}
+            theme={dracula}
+            wrapLines={true}
+            codeBlock
+          />
+        )}
+      </Stack>
     </Box>
   );
 };

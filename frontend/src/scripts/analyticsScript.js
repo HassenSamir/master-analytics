@@ -19,7 +19,6 @@ window.addEventListener('click', function (event) {
     element = element.parentElement;
   }
 
-  //if (event.target.tagName.toLowerCase() === "button") {}
   // Envoyer un événement à l'API
   console.log({
     innerText: event.target.innerText || '',
@@ -50,24 +49,3 @@ window.addEventListener('resize', function () {
 });
 
 //pro­vide a glob­al func­tion to al­low send­ing cus­tom events to the API.
-/*function sendCustomEvent(eventObj) {
-  // Format the event data into a JSON string
-  const url = 'https://example.com/api/custom-event';
-
-  // Send the data to the API using a POST request
-  fetch(url, {
-    method: 'POST',
-    body: JSON.stringify({
-      ...eventObj
-    }),
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  })
-    .then((response) => {
-      // Handle the API response
-    })
-    .catch((error) => {
-      // Handle the error
-    });
-}*/
