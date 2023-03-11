@@ -42,24 +42,20 @@ const SiteManagement = () => {
   };
 
   const fetchSite = async () => {
-    console.log(sites);
     if (user?.id) {
       const resp = await getSitesByUserId(user.id);
-      console.log(resp);
       setSites(resp);
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const deleteSite = async () => {
     await deleteSiteById(deleteSiteId)
-      .then((resp) => {
-        console.log(resp);
+      .then(() => {
         handleClose();
         setAlertDeletedSite(true);
         setTimeout(() => {
           setAlertDeletedSite(false);
-        }, 3000);
+        }, 2000);
         setDeleteSiteId('');
       })
       .catch((err) => console.log(err));
@@ -74,61 +70,65 @@ const SiteManagement = () => {
     }
   }, [alertCreatedSite, alertDeletedSite, alertUpdatedSite]);
 
-  useEffect(() => {
-    console.log(deleteSiteId);
-  }, [deleteSiteId]);
   return (
     <Box className="site-management-container">
-      <Stack direction="row" justifyContent="space-between" alignItems="flex-end">
-        <Typography variant="body1" fontStyle="italic" fontWeight="bold">
-          5 sites Max*
-        </Typography>
-        <Button sx={{ marginBottom: '15px' }} variant="contained" onClick={handleOpen}>
-          Create Site
-        </Button>
-        {user && (
-          <Modal
-            open={open}
-            onClose={handleClose}
-            aria-labelledby="modal-modal-title"
-            aria-describedby="modal-modal-description">
-            <SiteForm
-              id={user.id}
-              closeModal={() => setOpen(false)}
-              setAlert={setAlertCreatedSite}
-            />
-          </Modal>
-        )}
-        {deleteSiteId && (
-          <Modal
-            open={deleteSiteId.length > 0}
-            onClose={handleClose}
-            aria-labelledby="modal-modal-title"
-            aria-describedby="modal-modal-description">
-            <Box component="form" sx={style}>
-              <Typography>Are you sur you want to delete the site ?</Typography>
-              <Stack direction="row" gap="10px" justifyContent="flex-end">
-                <Button onClick={() => setDeleteSiteId('')}>Cancel</Button>
-                <Button onClick={deleteSite}>Confirm</Button>
-              </Stack>
-            </Box>
-          </Modal>
-        )}
-        {updateSiteId && (
-          <Modal
-            open={updateSiteId.length > 0}
-            onClose={handleClose}
-            aria-labelledby="modal-modal-title"
-            aria-describedby="modal-modal-description">
-            <SiteForm
-              id={updateSiteId}
-              closeModal={handleClose}
-              setAlert={setAlertUpdatedSite}
-              isUpdate
-            />
-          </Modal>
-        )}
-      </Stack>
+      {sites?.length > 0 && (
+        <Stack direction="row" justifyContent="space-between" alignItems="flex-end">
+          <Typography variant="body1" fontStyle="italic" fontWeight="bold">
+            3 sites Max*
+          </Typography>
+          <Button
+            sx={{ marginBottom: '15px' }}
+            variant="contained"
+            onClick={handleOpen}
+            disabled={sites.length >= 3}>
+            Create Site
+          </Button>
+          {user && (
+            <Modal
+              open={open}
+              onClose={handleClose}
+              aria-labelledby="modal-modal-title"
+              aria-describedby="modal-modal-description">
+              <SiteForm
+                id={user.id}
+                closeModal={() => setOpen(false)}
+                setAlert={setAlertCreatedSite}
+              />
+            </Modal>
+          )}
+          {deleteSiteId && (
+            <Modal
+              open={deleteSiteId.length > 0}
+              onClose={handleClose}
+              aria-labelledby="modal-modal-title"
+              aria-describedby="modal-modal-description">
+              <Box component="form" sx={style}>
+                <Typography>Are you sur you want to delete the site ?</Typography>
+                <Stack direction="row" gap="10px" justifyContent="flex-end">
+                  <Button onClick={() => setDeleteSiteId('')}>Cancel</Button>
+                  <Button onClick={deleteSite}>Confirm</Button>
+                </Stack>
+              </Box>
+            </Modal>
+          )}
+          {updateSiteId && (
+            <Modal
+              open={updateSiteId.length > 0}
+              onClose={handleClose}
+              aria-labelledby="modal-modal-title"
+              aria-describedby="modal-modal-description">
+              <SiteForm
+                id={updateSiteId}
+                closeModal={handleClose}
+                setAlert={setAlertUpdatedSite}
+                isUpdate
+              />
+            </Modal>
+          )}
+        </Stack>
+      )}
+
       {alertCreatedSite && <Alert severity="success">Success in creating the site</Alert>}
       {alertDeletedSite && <Alert severity="warning">Deleting the site</Alert>}
       {alertUpdatedSite && <Alert severity="info">Update successful</Alert>}
