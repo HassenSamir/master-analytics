@@ -1,9 +1,20 @@
 /* eslint-disable react/prop-types */
-import { IconButton, Stack, Table, TableBody, TableCell, TableHead, TableRow } from '@mui/material';
+import {
+  IconButton,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  Typography
+} from '@mui/material';
 import React from 'react';
 import { useEffect, useState } from 'react';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import ClipboardJS from 'clipboard';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
 const styles = {
   container: {
@@ -34,13 +45,27 @@ const SiteTable = ({ sites, setDeleteSiteId, setUpdateSiteId }) => {
   const header = ['ID', 'name', 'url', 'API KEY', 'creation date', 'Actions'];
   const [data, setData] = useState([]);
 
+  const handleClick = (text) => {
+    ClipboardJS.copy(text);
+  };
+
   useEffect(() => {
     const sitesFormatted = sites.map((site, index) => {
       return {
         id: index + 1,
         name: site.name,
         url: site.url,
-        api_key: site.apiKey,
+        api_key: (
+          <Stack direction="row" justifyContent="space-between">
+            <Typography>{site.apiKey}</Typography>
+            <IconButton
+              onClick={() => handleClick(site.apiKey)}
+              variant="contained"
+              color="primary">
+              <ContentCopyIcon />
+            </IconButton>
+          </Stack>
+        ),
         date: site.creationDate,
         actions: (
           <Stack direction="row" gap="10px">
