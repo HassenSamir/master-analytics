@@ -5,6 +5,7 @@ import PageChangeView from './events/pageChangeView/PageChangeView';
 import CustomView from './events/customView/CustomView';
 import SiteOverView from './site/siteOverview/SiteOverView';
 import SiteManagement from './site/siteManagement/SiteManagement';
+import Profile from './profile/Profile';
 
 export {
   GlobalView,
@@ -13,5 +14,6 @@ export {
   PageChangeView,
   CustomView,
   SiteOverView,
-  SiteManagement
+  SiteManagement,
+  Profile
 };

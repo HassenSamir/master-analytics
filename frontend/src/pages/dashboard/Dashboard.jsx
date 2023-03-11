@@ -19,7 +19,8 @@ import {
   PageChangeView,
   ResizeView,
   SiteManagement,
-  SiteOverView
+  SiteOverView,
+  Profile
 } from './tabs';
 
 function Dashboard() {
@@ -66,6 +67,12 @@ function Dashboard() {
       title: 'site_overview',
       description: 'Welcome to your dashboard',
       body: <SiteOverView />
+    },
+    profile: {
+      currentTab: false,
+      title: 'Profile',
+      description: 'Welcome to your dashboard',
+      body: <Profile />
     }
   };
   const [tabs, setTabs] = useState();
@@ -161,6 +168,12 @@ function Dashboard() {
               style={{ backgroundColor: tabs.site_management.currentTab && 'red' }}
               icon={<CalendarTodayOutlinedIcon />}>
               Management
+            </MenuItem>
+            <MenuItem
+              onClick={() => handleMenuItemClick('profile', tabs.profile)}
+              style={{ backgroundColor: tabs.profile.currentTab && 'red', marginTop: '25px' }}
+              icon={<CalendarTodayOutlinedIcon />}>
+              Profile
             </MenuItem>
           </Menu>
         </Sidebar>
