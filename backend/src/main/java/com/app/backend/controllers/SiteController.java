@@ -1,14 +1,12 @@
 package com.app.backend.controllers;
 
 import com.app.backend.dto.SiteDTO;
-import com.app.backend.models.Site;
+import com.app.backend.dto.SiteUpdateDTO;
 import com.app.backend.services.SiteServices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -32,7 +30,7 @@ public class SiteController {
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('USER') or hasRole('MODERATOR') or hasRole('ADMIN')")
-    public Site updateSite(@PathVariable String id, @RequestBody Site updatedSite) throws Exception {
+    public ResponseEntity<?> updateSite(@PathVariable String id, @RequestBody SiteUpdateDTO updatedSite)  {
         return siteServices.updateSite(id, updatedSite);
     }
 

@@ -1,6 +1,7 @@
 package com.app.backend.services;
 
 import com.app.backend.dto.SiteDTO;
+import com.app.backend.dto.SiteUpdateDTO;
 import com.app.backend.handler.ErrorResponse;
 import com.app.backend.models.Site;
 import com.app.backend.models.User;
@@ -18,11 +19,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 import java.net.URI;
-import java.nio.file.AccessDeniedException;
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.Optional;
 
@@ -129,7 +127,7 @@ public class SiteServices {
         return ResponseEntity.status(HttpStatus.OK).body(site);
     }
 
-    public ResponseEntity<?> getSitesByUserId(String userId) throws Exception {
+    public ResponseEntity<?> getSitesByUserId(String userId) {
         // Vérifier si l'utilisateur existe
         ResponseEntity<?> isUserOnDb = Utils.checkIfUserExistById(userRepository, userId);
         if (isUserOnDb != null) {
@@ -147,37 +145,72 @@ public class SiteServices {
         return ResponseEntity.status(HttpStatus.OK).body(siteRepository.findAllByUserId(userId));
     }
 
-    public Site updateSite(String id, Site updatedSite) throws Exception {
+    public ResponseEntity<?> updateSite(String id, SiteUpdateDTO updatedSite) {
+
         // Vérifier si le site existe
         Optional<Site> optionalSite = siteRepository.findById(id);
         if (optionalSite.isEmpty()) {
-            throw new Exception("Site not found with id: " + id);
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new ErrorResponse(HttpStatus.NOT_FOUND.value(), "Not Found", "Site not found with id: " + id));
+
         }
 
         Site site = optionalSite.get();
 
+
+        // Vérification si l'utilisateur connecté est propriétaire du site
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+        // Extract user id from token
+        String userId = ((UserDetailsImpl) authentication.getPrincipal()).getId();
+
+        if (!site.getUserId().equals(userId) && !isAdmin) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new ErrorResponse(HttpStatus.UNAUTHORIZED.value(), "Unauthorized", "You are not authorized to delete this site"));
+        }
+
+
         // Vérifier si le nom du site est unique pour l'utilisateur
-        if (siteRepository.findByUserIdAndName(site.getUserId(), updatedSite.getName()).isPresent()) {
-            throw new Exception("Site name already exists for user");
+        Optional<Site> optionalSiteByName = siteRepository.findByUserIdAndName(site.getUserId(), site.getName());
+        if (optionalSiteByName.isPresent() && !optionalSiteByName.get().getId().equals(id)) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Bad Request", "Site name already exists for user"));
+
         }
 
-        // Vérifier si l'URL du site est valide
-        HttpStatus urlStatus = isValidUrl(site.getUrl());
-        if (urlStatus != HttpStatus.OK) {
-            throw new ResponseStatusException(urlStatus, "Invalid URL");
+        // Vérifier si au moins une propriété de SiteUpdateDTO est présente
+        if ((updatedSite.getName() == null || updatedSite.getName().isBlank()) && (updatedSite.getDescription() == null || updatedSite.getDescription().isBlank())) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Bad Request", "At least one field must be present for update"));
         }
 
-        // Vérifier si la description du site est présente
-        if (updatedSite.getDescription() == null || updatedSite.getDescription().isEmpty()) {
-            throw new Exception("Site description is required");
+        // Vérifier si l'élément modifié est différent de celui qui existe déjà
+        if (updatedSite.getName() != null && updatedSite.getName().equals(site.getName()) && updatedSite.getDescription() != null && updatedSite.getDescription().equals(site.getDescription())) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Bad Request", "Site name and description are the same as the existing site"));
         }
 
         // Mettre à jour les informations du site
-        site.setName(updatedSite.getName());
-        site.setUrl(updatedSite.getUrl());
-        site.setDescription(updatedSite.getDescription());
+        if (updatedSite.getName() != null && !updatedSite.getName().isBlank()) {
+            site.setName(updatedSite.getName());
+        }
+        if (updatedSite.getDescription() != null && !updatedSite.getDescription().isBlank()) {
+            site.setDescription(updatedSite.getDescription());
+        }
 
-        return siteRepository.save(site);
+        siteRepository.save(site);
+        return ResponseEntity.ok("Site updated successfully.");
     }
 
 
