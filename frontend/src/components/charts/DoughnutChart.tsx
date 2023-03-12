@@ -14,21 +14,23 @@ export const DoughnutChart = ({ labels = STATIC_LABELS, events, title = 'Events'
 
     plugins: {
       legend: {
-        display: false
+        display: true
       }
     },
     title: {
-      display: false,
+      display: true,
       text: title
     }
   };
+
+  const total = events.reduce((acc, val) => acc + val, 0);
 
   const data = {
     labels: labels,
     datasets: [
       {
-        label: '# of Votes',
-        data: events || [12, 19, 3, 5],
+        label: 'Events %',
+        data: events.map((val) => ((val / total) * 100).toFixed(2)),
         backgroundColor: [
           'rgba(255, 99, 132, 0.7)',
           'rgba(54, 162, 235, 0.7)',

@@ -51,7 +51,7 @@ export const AreaChart = ({ labels = STATIC_LABELS, events, title = 'Events' }) 
       title: {
         display: true,
         text: title,
-        color: 'white'
+        color: 'black'
       }
     },
     scales: {
@@ -63,8 +63,6 @@ export const AreaChart = ({ labels = STATIC_LABELS, events, title = 'Events' }) 
       }
     }
   };
-
-  console.log(labels.map(() => faker.datatype.number({ min: 0, max: 1000 })));
 
   const data = {
     labels,

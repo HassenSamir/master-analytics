@@ -5,36 +5,36 @@ import './NotLoggedNavBar.css';
 
 const NotLoggedNavBar = () => {
   return (
-    <div className="navbar-container">
+    <Stack direction="row" className="navbar-container">
       <Stack className="navbar-title">
         <Link>
-          <Typography variant="h4">Master Analytics</Typography>
+          <Typography variant="h4" fontWeight="bold">
+            Master Analytics
+          </Typography>
         </Link>
+        <Stack className="navbar-links">
+          <Link>
+            <Typography>Home</Typography>
+          </Link>
+          <Link>
+            <Typography>Plan</Typography>
+          </Link>
+          <Link>
+            <Typography>Integration</Typography>
+          </Link>
+        </Stack>
       </Stack>
-      <Stack className="navbar-links">
-        <Link>
-          <Typography>Home1</Typography>
+      <Stack direction="row" className="navbar-btn-container">
+        <Link to="/signin" style={{ textDecoration: 'none' }}>
+          <Button className="navbar-btn-signin">Sign In</Button>
         </Link>
-        <Link>
-          <Typography>Home1</Typography>
-        </Link>
-        <Link>
-          <Typography>Home1</Typography>
-        </Link>
-      </Stack>
-      <Stack direection="row" className="navbar-btn-container">
-        <Link to="/signin">
-          <Button className="navbar-btn" variant="outlined">
-            Sign In
-          </Button>
-        </Link>
-        <Link to="/signup">
-          <Button className="navbar-btn" variant="outlined">
+        <Link to="/signup" style={{ textDecoration: 'none' }}>
+          <Button className="navbar-btn-signup" variant="outlined">
             Sign Up
           </Button>
         </Link>
       </Stack>
-    </div>
+    </Stack>
   );
 };
 

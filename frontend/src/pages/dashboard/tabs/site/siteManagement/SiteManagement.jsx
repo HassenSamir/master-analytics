@@ -74,9 +74,14 @@ const SiteManagement = () => {
     <Box className="site-management-container">
       {sites?.length > 0 && (
         <Stack direction="row" justifyContent="space-between" alignItems="flex-end">
-          <Typography variant="body1" fontStyle="italic" fontWeight="bold">
-            3 sites Max*
-          </Typography>
+          <Stack direction="column">
+            <Typography variant="body1" fontStyle="italic" fontWeight="bold">
+              3 sites Max*
+            </Typography>
+            <Typography variant="body2" fontStyle="italic">
+              {'(limited to 100 events per day for each site)'}
+            </Typography>
+          </Stack>
           <Button
             sx={{ marginBottom: '15px' }}
             variant="contained"
@@ -105,6 +110,7 @@ const SiteManagement = () => {
               aria-describedby="modal-modal-description">
               <Box component="form" sx={style}>
                 <Typography>Are you sur you want to delete the site ?</Typography>
+                <Alert severity="warning">All events for this site will be deleted</Alert>
                 <Stack direction="row" gap="10px" justifyContent="flex-end">
                   <Button onClick={() => setDeleteSiteId('')}>Cancel</Button>
                   <Button onClick={deleteSite}>Confirm</Button>

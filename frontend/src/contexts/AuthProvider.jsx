@@ -16,14 +16,12 @@ export const AuthProvider = ({ children }) => {
   const [roles, setRoles] = useState(null);
 
   const login = (data) => {
-    console.log('login', data);
     setUser(data);
     setToken(data.accessToken);
     setRoles(data.roles);
     localStorage.setItem('master-analytics-user', JSON.stringify(data));
     localStorage.setItem('master-analytics-token', data.accessToken);
     localStorage.setItem('master-analytics-roles', JSON.stringify(data.roles));
-    console.log('login', user);
   };
 
   const logout = () => {
@@ -45,8 +43,6 @@ export const AuthProvider = ({ children }) => {
       setToken(tokenFromStorage);
       setRoles(JSON.parse(rolesFromStorage));
     }
-    console.log({ user, token, roles });
-    console.log(JSON.parse(userFromStorage), tokenFromStorage, JSON.parse(rolesFromStorage));
   }, []);
 
   const contextValue = useMemo(() => {

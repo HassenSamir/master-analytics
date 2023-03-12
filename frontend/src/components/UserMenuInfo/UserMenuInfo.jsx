@@ -1,5 +1,5 @@
 import { Avatar, Fade, IconButton, Menu, MenuItem, Typography } from '@mui/material';
-import React, { useEffect } from 'react';
+import React from 'react';
 import './UserMenuInfo.css';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import PropTypes from 'prop-types';
@@ -20,10 +20,6 @@ const UserMenuInfo = () => {
   const handleLogout = () => {
     logout();
   };
-
-  useEffect(() => {
-    console.log('UserMenuInfo', user);
-  }, [user]);
 
   return (
     <div className="user-menu-container">

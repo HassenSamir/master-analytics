@@ -26,7 +26,7 @@ const Profile = () => {
           required
           fullWidth
           name="email"
-          label="Username"
+          label="Email"
           type="email"
           id="email"
           autoComplete="current-email"

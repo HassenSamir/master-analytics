@@ -57,7 +57,6 @@ const GlobalView = () => {
   const [eventsMetricsPeriod, setEventsMetricsPeriod] = useState();
   const { user } = React.useContext(AuthContext);
   const [sites, setSites] = useState([]);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [currentSite, setCurrentSite] = useState();
   const [eventsMetricsCurrentSite, setEventsMetricsCurrentSite] = useState();
   const EVENTS_TYPES = [
@@ -65,12 +64,10 @@ const GlobalView = () => {
     { id: 1, value: 'page_change' },
     { id: 2, value: 'resize' }
   ];
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [currentType, setCurrentType] = useState(EVENTS_TYPES[0].value);
 
   const fetchEventMetrics = async () => {
     const data = await getEventsMetrics(user.id);
-    console.log(data);
     if (data) {
       setEventsTotalMetrics(data);
     }
@@ -78,10 +75,9 @@ const GlobalView = () => {
 
   const fetchEventsMetricsPeriod = async () => {
     const resp = await getEventsMetricsPeriod(user.id);
-    console.log(resp);
     if (resp?.data) {
       setEventsMetricsPeriod({
-        title: `Events - ${resp.period} - ${resp.year}`,
+        title: `Number of Events - ${resp.period} - ${resp.year}`,
         labels: resp.data.map((x) => x.label),
         values: resp.data.map((x) => x.value)
       });
@@ -90,7 +86,6 @@ const GlobalView = () => {
 
   const fetchEventsMetricsBySiteAndUserId = async (userId, siteId) => {
     const events = await getEventsMetricsBySiteAndUserId(userId, siteId);
-    console.log('fetchEventsMetricsBySiteAndUserId', events);
     const labels = ['Click', 'PageChange', 'Resize', 'Custom'];
     const values = [events.click, events.pageChange, events.resize, events.custom];
     setEventsMetricsCurrentSite({
@@ -101,7 +96,6 @@ const GlobalView = () => {
 
   const fetchSitesForUser = async () => {
     const sites = await getSitesByUserId(user.id);
-    console.log('fetchEventsMetricsBySiteAndUserId', sites);
     if (sites) {
       setSites(sites);
       setCurrentSite(sites[0].id);
@@ -110,10 +104,7 @@ const GlobalView = () => {
   };
 
   const handleCurrSiteUpdate = (e) => {
-    console.log(e);
     const currSite = sites.filter((x) => x.id === e.target.value)[0];
-
-    console.log(currSite);
     setCurrentSite(currSite.id);
     fetchEventsMetricsBySiteAndUserId(user.id, currSite.id);
   };
@@ -129,9 +120,6 @@ const GlobalView = () => {
       fetchSitesForUser();
     }
   }, []);
-  useEffect(() => {
-    console.log(eventsMetricsPeriod);
-  }, [eventsMetricsPeriod]);
 
   return (
     <div className="globalview-container">
@@ -151,12 +139,12 @@ const GlobalView = () => {
         <Stack>
           <Stack>
             <FormControl variant="filled" sx={{ width: 250 }}>
-              <InputLabel id="demo-simple-select-label">Site</InputLabel>
+              <InputLabel id="simple-select-label">Events by Site</InputLabel>
               <Select
-                labelId="demo-simple-select-label"
-                id="demo-simple-select"
+                labelId="simple-select-label"
+                id="simple-select"
                 value={currentSite}
-                label="Site"
+                label="Sites"
                 onChange={handleCurrSiteUpdate}>
                 {sites.map((s) => {
                   return (
@@ -168,7 +156,6 @@ const GlobalView = () => {
               </Select>
             </FormControl>
           </Stack>
-
           <div className="globalview-second-section">
             <Paper
               elevation={3}
@@ -194,10 +181,10 @@ const GlobalView = () => {
 
       <Stack justifyContent="space-between" sx={{ marginBottom: '-30px' }}>
         <FormControl variant="filled" sx={{ width: 250 }}>
-          <InputLabel id="demo-simple-select-label">Last Event Types</InputLabel>
+          <InputLabel id="simple-select-label">Last Events By Types</InputLabel>
           <Select
-            labelId="demo-simple-select-label"
-            id="demo-simple-select"
+            labelId="dsimple-select-label"
+            id="simple-select"
             value={currentType}
             label="Event Types"
             onChange={handleCurrTypeUpdate}>

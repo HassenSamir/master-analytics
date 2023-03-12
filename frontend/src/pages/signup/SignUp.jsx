@@ -5,7 +5,6 @@ import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
-import Link from '@mui/material/Link';
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
@@ -15,38 +14,20 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { userSignUp } from '../../api/auth.service';
-
-function Copyright(props) {
-  return (
-    <Typography variant="body2" color="text.secondary" align="center" {...props}>
-      {'Copyright © '}
-      <Link color="inherit" href="https://mui.com/">
-        Your Website
-      </Link>{' '}
-      {new Date().getFullYear()}
-      {'.'}
-    </Typography>
-  );
-}
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 
 const theme = createTheme();
 
 const SignUp = () => {
   const navigate = useNavigate();
-  const [username, setUsername] = useState();
-  const [email, setEmail] = useState();
-  const [password, setPassword] = useState();
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log({
-      username,
-      email,
-      password
-    });
     userSignUp(username, email, password).then(
-      (user) => {
-        console.log(user);
+      () => {
         navigate('/signin');
       },
       (error) => {
@@ -74,6 +55,10 @@ const SignUp = () => {
           }}
         />
         <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
+          <Button sx={{ mx: 2, mt: 1, textTransform: 'capitalize' }} onClick={() => navigate('/')}>
+            <ChevronLeftIcon />
+            Back
+          </Button>
           <Box
             sx={{
               my: 8,
@@ -132,7 +117,6 @@ const SignUp = () => {
               <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
                 Sign In
               </Button>
-              <Copyright sx={{ mt: 5 }} />
             </Box>
           </Box>
         </Grid>

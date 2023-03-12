@@ -15,7 +15,7 @@ const style = {
   p: 4
 };
 
-const SiteForm = React.forwardRef(({ setAlert, closeModal, id, isUpdate = false }) => {
+const SiteForm = React.forwardRef(({ setAlert, closeModal, id, isUpdate = false }, ref) => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [url, setUrl] = useState('');
@@ -31,8 +31,7 @@ const SiteForm = React.forwardRef(({ setAlert, closeModal, id, isUpdate = false 
       : createSite(id, name, description, url);
 
     fetchFunction
-      .then((resp) => {
-        console.log(resp);
+      .then(() => {
         closeModal();
         setAlert(true);
         setTimeout(() => {
@@ -54,7 +53,7 @@ const SiteForm = React.forwardRef(({ setAlert, closeModal, id, isUpdate = false 
   const updateCondition = !name.length > 0 && !url.length > 0;
 
   return (
-    <Box component="form" noValidate onSubmit={handleSubmit} sx={style}>
+    <Box component="form" noValidate onSubmit={handleSubmit} sx={style} ref={ref}>
       <TextField
         margin="normal"
         required

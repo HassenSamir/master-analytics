@@ -28,55 +28,55 @@ function Dashboard() {
   const STATIC_TABS = {
     dashboard: {
       currentTab: false,
-      title: 'DASHBOARD',
+      title: 'Dashboard',
       description: 'Welcome to your dashboard',
       body: <GlobalView />
     },
     click: {
       currentTab: false,
-      title: 'click',
-      description: 'Welcome to your dashboard',
+      title: 'Click',
+      description: 'View your page change events',
       body: <ClickView />
     },
     page_change: {
       currentTab: false,
-      title: 'page_change',
-      description: 'Welcome to your dashboard',
+      title: 'Page Change',
+      description: 'View your page change events',
       body: <PageChangeView />
     },
     resize: {
       currentTab: false,
-      title: 'resize',
-      description: 'Welcome to your dashboard',
+      title: 'Resize',
+      description: 'View your resize events',
       body: <ResizeView />
     },
     custom: {
       currentTab: false,
       title: 'Custom',
-      description: 'Welcome to your dashboard',
+      description: 'View your custom change events',
       body: <CustomView />
     },
     site_management: {
       currentTab: false,
-      title: 'site_management',
-      description: 'Welcome to your dashboard',
+      title: 'Management',
+      description: 'Manage your sites',
       body: <SiteManagement />
     },
     site_overview: {
       currentTab: false,
-      title: 'site_overview',
-      description: 'Welcome to your dashboard',
+      title: 'Site Overview',
+      description: 'Visual of your metrics for your sites',
       body: <SiteOverView />
     },
     profile: {
       currentTab: false,
       title: 'Profile',
-      description: 'Welcome to your dashboard',
+      description: 'View your profile',
       body: <Profile />
     }
   };
+
   const [tabs, setTabs] = useState();
-  // eslint-disable-next-line no-unused-vars
   const [currentTab, setCurrentTab] = useState();
 
   const handleMenuItemClick = (name, obj) => {
@@ -110,8 +110,8 @@ function Dashboard() {
   return (
     <div id="dashboard" className="dashboard-container">
       {tabs && (
-        <Sidebar style={{ height: '100vh' }}>
-          <Menu>
+        <Sidebar className="dashboard-sidebar" style={{ height: '100vh' }}>
+          <Menu className="dashboard-sidebar">
             <MenuItem
               icon={<MenuOutlinedIcon />}
               onClick={() => {
@@ -123,55 +123,81 @@ function Dashboard() {
 
             <MenuItem
               onClick={() => handleMenuItemClick('dashboard', tabs.dashboard)}
-              style={{ backgroundColor: tabs.dashboard.currentTab && 'red', marginTop: '25px' }}
+              style={{
+                backgroundColor: tabs.dashboard.currentTab && '#C7C7C7',
+                fontWeight: tabs.dashboard.currentTab && 'bold',
+                marginTop: '25px'
+              }}
               icon={<HomeOutlinedIcon />}>
               Dashboard
             </MenuItem>
-            <Typography sx={{ backgroundColor: 'gray', paddingX: '20px', marginTop: '25px' }}>
+            <Typography fontWeight="bold" sx={{ paddingX: '20px', marginTop: '25px' }}>
               Events
             </Typography>
             <MenuItem
               onClick={() => handleMenuItemClick('click', tabs.click)}
-              style={{ backgroundColor: tabs.click.currentTab && 'red' }}
+              style={{
+                backgroundColor: tabs.click.currentTab && '#C7C7C7',
+                fontWeight: tabs.click.currentTab && 'bold'
+              }}
               icon={<PeopleOutlinedIcon />}>
               Click
             </MenuItem>
             <MenuItem
               onClick={() => handleMenuItemClick('page_change', tabs.page_change)}
-              style={{ backgroundColor: tabs.page_change.currentTab && 'red' }}
+              style={{
+                backgroundColor: tabs.page_change.currentTab && '#C7C7C7',
+                fontWeight: tabs.page_change.currentTab && 'bold'
+              }}
               icon={<ContactsOutlinedIcon />}>
               Page Change
             </MenuItem>
             <MenuItem
               onClick={() => handleMenuItemClick('resize', tabs.resize)}
-              style={{ backgroundColor: tabs.resize.currentTab && 'red' }}
+              style={{
+                backgroundColor: tabs.resize.currentTab && '#C7C7C7',
+                fontWeight: tabs.resize.currentTab && 'bold'
+              }}
               icon={<ReceiptOutlinedIcon />}>
               Resize
             </MenuItem>
             <MenuItem
               onClick={() => handleMenuItemClick('custom', tabs.custom)}
-              style={{ backgroundColor: tabs.custom.currentTab && 'red' }}
+              style={{
+                backgroundColor: tabs.custom.currentTab && '#C7C7C7',
+                fontWeight: tabs.custom.currentTab && 'bold'
+              }}
               icon={<HelpOutlineOutlinedIcon />}>
               Custom
             </MenuItem>
-            <Typography sx={{ backgroundColor: 'gray', paddingX: '20px', marginTop: '25px' }}>
+            <Typography fontWeight="bold" sx={{ paddingX: '20px', marginTop: '25px' }}>
               Sites
             </Typography>
             <MenuItem
               onClick={() => handleMenuItemClick('site_overview', tabs.site_overview)}
-              style={{ backgroundColor: tabs.site_overview.currentTab && 'red' }}
+              style={{
+                backgroundColor: tabs.site_overview.currentTab && '#C7C7C7',
+                fontWeight: tabs.site_overview.currentTab && 'bold'
+              }}
               icon={<CalendarTodayOutlinedIcon />}>
               Overview
             </MenuItem>
             <MenuItem
               onClick={() => handleMenuItemClick('site_management', tabs.site_management)}
-              style={{ backgroundColor: tabs.site_management.currentTab && 'red' }}
+              style={{
+                backgroundColor: tabs.site_management.currentTab && '#C7C7C7',
+                fontWeight: tabs.site_management.currentTab && 'bold'
+              }}
               icon={<CalendarTodayOutlinedIcon />}>
               Management
             </MenuItem>
             <MenuItem
               onClick={() => handleMenuItemClick('profile', tabs.profile)}
-              style={{ backgroundColor: tabs.profile.currentTab && 'red', marginTop: '25px' }}
+              style={{
+                backgroundColor: tabs.profile.currentTab && '#C7C7C7',
+                marginTop: '25px',
+                fontWeight: tabs.profile.currentTab && 'bold'
+              }}
               icon={<CalendarTodayOutlinedIcon />}>
               Profile
             </MenuItem>
