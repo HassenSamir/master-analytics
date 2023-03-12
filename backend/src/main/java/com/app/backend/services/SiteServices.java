@@ -3,8 +3,10 @@ package com.app.backend.services;
 import com.app.backend.dto.SiteDTO;
 import com.app.backend.dto.SiteUpdateDTO;
 import com.app.backend.handler.ErrorResponse;
+import com.app.backend.models.ApiKeyCounter;
 import com.app.backend.models.Site;
 import com.app.backend.models.User;
+import com.app.backend.repository.ApiKeyCounterRepository;
 import com.app.backend.repository.SiteRepository;
 import com.app.backend.repository.UserRepository;
 import com.app.backend.security.config.ApiKeyGenerator;
@@ -21,6 +23,7 @@ import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.Optional;
 
@@ -29,6 +32,9 @@ public class SiteServices {
 
     @Autowired
     private SiteRepository siteRepository;
+
+    @Autowired
+    private ApiKeyCounterRepository apiKeyCounterRepository;
 
     @Autowired
     private UserRepository userRepository;
@@ -70,7 +76,6 @@ public class SiteServices {
         site.setApiKey(apiKey);
         site.setCreationDate(new Date());
 
-
         HttpStatus urlStatus = isValidUrl(site.getUrl());
         if (urlStatus != HttpStatus.OK) {
             return ResponseEntity
@@ -95,6 +100,11 @@ public class SiteServices {
         }
 
         Site savedSite = siteRepository.save(site);
+
+        // Créer un objet ApiKeyCounter pour l'ApiKey du nouveau site
+        ApiKeyCounter apiKeyCounter = new ApiKeyCounter(apiKey,LocalDate.now());
+
+        apiKeyCounterRepository.save(apiKeyCounter);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(savedSite);
     }
@@ -130,6 +140,9 @@ public class SiteServices {
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(new ErrorResponse(HttpStatus.UNAUTHORIZED.value(), "Unauthorized", "You are not authorized to delete this site"));
         }
+
+        // Supprimer la clé API associée
+        apiKeyCounterRepository.deleteByApiKey(site.getApiKey());
 
         // Supprimer le site
         siteRepository.deleteById(id);

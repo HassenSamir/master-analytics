@@ -10,6 +10,8 @@ import com.app.backend.repository.*;
 import com.app.backend.security.services.UserDetailsImpl;
 import com.app.backend.utils.Utils;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -22,6 +24,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +33,7 @@ import java.util.Optional;
 
 @Service
 public class EventServices {
+    private final Logger logger = LoggerFactory.getLogger(EventMetricsService.class);
 
     @Autowired
     private UserRepository userRepository;
@@ -38,6 +42,8 @@ public class EventServices {
     private SiteRepository siteRepository;
     @Autowired
     private EventClickRepository eventClickRepository;
+    @Autowired
+    private ApiKeyCounterRepository apiKeyCounterRepository;
 
     @Autowired
     private EventPageChangeRepository eventPageChangeRepository;
@@ -46,23 +52,6 @@ public class EventServices {
     private EventResizeRepository eventResizeRepository;
 
 
-    // GET
-
-    // ADMIN SERVICE
-   /* public Page<EventClick> findAllClickEvents() {
-        return eventClickRepository.findAll();
-    }
-
-    public Page<EventPageChange> findAllPageChangeEvents(Pageable pageable) {
-        return eventPageChangeRepository.findAll(pageable);
-    }
-
-    public Page<EventResize> findAllResizeEvents() {
-        return eventResizeRepository.findAll();
-    }*/
-
-
-    // USER SERVICE
 
     public ResponseEntity<?> findAllEventsByTypeAndUserId(String type, String userId, int page,int size) {
         // Vérifier si l'utilisateur existe
@@ -209,6 +198,27 @@ public class EventServices {
                         .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Bad Request", "Inner text is required"));
             }
 
+            // Récupérer l'objet ApiKeyCounter correspondant à l'API key
+            ApiKeyCounter apiKeyCounter = apiKeyCounterRepository.findByApiKey(apiKey);
+
+            // Vérifier si le jour a changé
+            if (apiKeyCounter.getLastEventDate() == null || !apiKeyCounter.getLastEventDate().equals(LocalDate.now())) {
+                apiKeyCounter.setCounter(0); // Réinitialiser le compteur à 0
+            }
+
+            // Vérifier si la limite quotidienne a été atteinte
+            if (apiKeyCounter.getCounter() >= apiKeyCounter.getDailyLimit()) {
+                return ResponseEntity
+                        .status(HttpStatus.TOO_MANY_REQUESTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(new ErrorResponse(HttpStatus.TOO_MANY_REQUESTS.value(), "Too Many Requests", "Daily limit for API key has been reached"));
+            }
+
+            // Augmenter le compteur de l'objet ApiKeyCounter et enregistrer dans la base de données
+            apiKeyCounter.setCounter(apiKeyCounter.getCounter() + 1);
+            apiKeyCounter.setLastEventDate(LocalDate.now());
+            apiKeyCounterRepository.save(apiKeyCounter);
+
             EventClick clickEvent = new EventClick(
                     site.getUserId(),
                     clickEventDTO.getClientTime(),
@@ -243,12 +253,39 @@ public class EventServices {
         for (EventPageChangeDTO pageChangeEventDTO : pageChangeEventDTOs) {
             // Vérifier si Old page est non nul et non vide
             if (ObjectUtils.isEmpty(pageChangeEventDTO.getOldPage())) {
-                throw new IOException("Old page is required");
+                return ResponseEntity
+                        .status(HttpStatus.BAD_REQUEST)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Bad Request", "Old page is required"));
             }
             // Vérifier si New page est non nul et non vide
             if (ObjectUtils.isEmpty(pageChangeEventDTO.getNewPage())) {
-                throw new IOException("New page is required");
+                return ResponseEntity
+                        .status(HttpStatus.BAD_REQUEST)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Bad Request", "New page is required"));
             }
+
+            // Récupérer l'objet ApiKeyCounter correspondant à l'API key
+            ApiKeyCounter apiKeyCounter = apiKeyCounterRepository.findByApiKey(apiKey);
+
+            // Vérifier si le jour a changé
+            if (apiKeyCounter.getLastEventDate() == null || !apiKeyCounter.getLastEventDate().equals(LocalDate.now())) {
+                apiKeyCounter.setCounter(0); // Réinitialiser le compteur à 0
+            }
+
+            // Vérifier si la limite quotidienne a été atteinte
+            if (apiKeyCounter.getCounter() >= apiKeyCounter.getDailyLimit()) {
+                return ResponseEntity
+                        .status(HttpStatus.TOO_MANY_REQUESTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(new ErrorResponse(HttpStatus.TOO_MANY_REQUESTS.value(), "Too Many Requests", "Daily limit for API key has been reached"));
+            }
+
+            // Augmenter le compteur de l'objet ApiKeyCounter et enregistrer dans la base de données
+            apiKeyCounter.setCounter(apiKeyCounter.getCounter() + 1);
+            apiKeyCounter.setLastEventDate(LocalDate.now());
+            apiKeyCounterRepository.save(apiKeyCounter);
 
             // Créer un nouvel objet événement page change
             EventPageChange pageChangeEvent = new EventPageChange(
@@ -283,9 +320,13 @@ public class EventServices {
         Optional<Site> siteOptional = siteRepository.findByApiKey(apiKey);
         Site site = siteOptional.get();
 
+
         // Vérifier si la liste d'événements de resize n'est pas vide
         if (eventResizeDTOs.isEmpty()) {
-            throw new IOException("No resize events to save");
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Bad Request", "No resize events to save"));
         }
 
         List<EventResize> eventResizes = new ArrayList<>();
@@ -294,12 +335,39 @@ public class EventServices {
         for (EventResizeDTO eventResizeDTO : eventResizeDTOs) {
             // Vérifier si Screen width est non nul et non vide
             if (ObjectUtils.isEmpty(eventResizeDTO.getScreenWidth())) {
-                throw new IOException("Screen width is required");
+                return ResponseEntity
+                        .status(HttpStatus.BAD_REQUEST)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Bad Request", "Screen width is required"));
             }
             // Vérifier si Screen height est non nul et non vide
             if (ObjectUtils.isEmpty(eventResizeDTO.getScreenHeight())) {
-                throw new IOException("Screen height is required");
+                return ResponseEntity
+                        .status(HttpStatus.BAD_REQUEST)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Bad Request", "Screen height is required"));
             }
+
+            // Récupérer l'objet ApiKeyCounter correspondant à l'API key
+            ApiKeyCounter apiKeyCounter = apiKeyCounterRepository.findByApiKey(apiKey);
+
+            // Vérifier si le jour a changé
+            if (apiKeyCounter.getLastEventDate() == null || !apiKeyCounter.getLastEventDate().equals(LocalDate.now())) {
+                apiKeyCounter.setCounter(0); // Réinitialiser le compteur à 0
+            }
+
+            // Vérifier si la limite quotidienne a été atteinte
+            if (apiKeyCounter.getCounter() >= apiKeyCounter.getDailyLimit()) {
+                return ResponseEntity
+                        .status(HttpStatus.TOO_MANY_REQUESTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(new ErrorResponse(HttpStatus.TOO_MANY_REQUESTS.value(), "Too Many Requests", "Daily limit for API key has been reached"));
+            }
+
+            // Augmenter le compteur de l'objet ApiKeyCounter et enregistrer dans la base de données
+            apiKeyCounter.setCounter(apiKeyCounter.getCounter() + 1);
+            apiKeyCounter.setLastEventDate(LocalDate.now());
+            apiKeyCounterRepository.save(apiKeyCounter);
 
             // Créer un nouvel objet événement resize
             EventResize eventResize = new EventResize(
