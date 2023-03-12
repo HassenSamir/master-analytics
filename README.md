@@ -2,6 +2,10 @@
 
 MasterAnalytics est une application de suivi des événements qui permet aux utilisateurs de visualiser des métriques sur un tableau de bord. Les clients peuvent créer différents sites sur lesquels ils peuvent suivre des événements et l'application fournit un script à intégrer dans le site du client pour visualiser les métriques sur le tableau de bord de l'application.
 
+<img width="959" alt="image" src="https://user-images.githubusercontent.com/59694643/224579188-a6fa0bc0-22d0-44aa-bad2-b72dde35a05e.png">
+
+<img width="958" alt="image" src="https://user-images.githubusercontent.com/59694643/224579239-e5caec07-0679-4eaf-ad07-4ce81b5408c6.png">
+
 ## Prérequis
 
 - Node.js
