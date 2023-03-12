@@ -25,7 +25,7 @@ public class ApiKeyCounter {
         this.apiKey = apiKey;
         this.lastEventDate = lastEventDate;
         this.counter = 0;
-        this.dailyLimit = 10;
+        this.dailyLimit = 100;
     }
 
     public ApiKeyCounter(String apiKey, int counter, LocalDate lastEventDate, int dailyLimit) {
