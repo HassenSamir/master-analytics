@@ -6,9 +6,7 @@ import com.app.backend.handler.ErrorResponse;
 import com.app.backend.models.ApiKeyCounter;
 import com.app.backend.models.Site;
 import com.app.backend.models.User;
-import com.app.backend.repository.ApiKeyCounterRepository;
-import com.app.backend.repository.SiteRepository;
-import com.app.backend.repository.UserRepository;
+import com.app.backend.repository.*;
 import com.app.backend.security.config.ApiKeyGenerator;
 import com.app.backend.security.services.UserDetailsImpl;
 import com.app.backend.utils.Utils;
@@ -38,6 +36,12 @@ public class SiteServices {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private EventClickRepository eventClickRepository;
+    @Autowired
+    private EventResizeRepository eventResizeRepository;
+    @Autowired
+    private EventPageChangeRepository eventPageChangeRepository;
 
     public ResponseEntity<?> createSite(SiteDTO siteDto, String userId)  {
         // Vérifier si l'utilisateur existe
@@ -144,9 +148,14 @@ public class SiteServices {
         // Supprimer la clé API associée
         apiKeyCounterRepository.deleteByApiKey(site.getApiKey());
 
+        // Supprimer les événements liés au site
+        eventClickRepository.deleteBySite(site);
+        eventPageChangeRepository.deleteBySite(site);
+        eventResizeRepository.deleteBySite(site);
+
         // Supprimer le site
         siteRepository.deleteById(id);
-
+        
         return ResponseEntity.status(HttpStatus.OK).body(site);
     }
 
