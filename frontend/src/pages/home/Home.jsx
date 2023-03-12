@@ -1,8 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { Paper, Stack, Typography } from '@mui/material';
+import { Stack, Typography } from '@mui/material';
 import React from 'react';
 import './Home.css';
 import NotLoggedNavBar from '../../components/notloggednavbar/NotLoggedNavBar';
+import rightContentImg from '../../assets/home-image.png';
 
 const Home = () => {
   return (
@@ -24,7 +24,7 @@ const Home = () => {
         <Stack className="home-right-content">
           <img
             className="home-right-content-img"
-            src="https://cdn.searchenginejournal.com/wp-content/uploads/2021/11/get-to-know-google-analytics-4_-a-complete-guide-61b06558a2bc6-sej.png"
+            src={rightContentImg}
             alt="homepage-analytics-bg"
           />
         </Stack>

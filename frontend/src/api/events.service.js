@@ -1,4 +1,4 @@
-import authInterceptor from '../pages/interceptor/auth.interceptor';
+import authInterceptor from '../interceptor/auth.interceptor';
 
 export const getEventsMetrics = async (userId) => {
   return authInterceptor.get(`/events/metrics/user/${userId}`).then((response) => response.data);

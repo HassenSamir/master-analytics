@@ -94,11 +94,11 @@ const AllEventsTable = memo(({ type }) => {
     setTotalElements(resp.totalElements);
     const newData = resp.data.map((e, index) => ({
       id: index + 1 + rowsPerPage * page,
-      url: e.site.url,
-      site_name: e.site.name,
-      time: e.clientTime,
-      ipAddress: e.ipAddress,
-      clientUserAgent: e.clientUserAgent
+      url: e.site?.url,
+      site_name: e.site?.name,
+      time: e?.clientTime,
+      ipAddress: e?.ipAddress,
+      clientUserAgent: e?.clientUserAgent
     }));
 
     setData((s) => newData);
